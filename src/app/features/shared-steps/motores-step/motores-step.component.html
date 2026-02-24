@@ -1,0 +1,51 @@
+<h2>Configuración de motores</h2>
+
+<div *ngIf="error" style="color:red; margin-bottom: 12px;">
+  {{ error }}
+</div>
+
+<form [formGroup]="form">
+  <mat-accordion multi="true">
+    <mat-expansion-panel *ngFor="let motor of motores.controls; let i = index" [expanded]="i === 0">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <span *ngIf="panelIcon(i) === 'ok'">✔️</span>
+          <span *ngIf="panelIcon(i) === 'warn'">⚠️</span>
+          Motor {{ i + 1 }} — {{ motor.get('codigo')?.value }}
+        </mat-panel-title>
+      </mat-expansion-panel-header>
+
+      <div [formGroup]="$any(motor)">
+        <mat-form-field appearance="outline">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Modelo</mat-label>
+          <input matInput formControlName="modelo">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Ubicación</mat-label>
+          <input matInput formControlName="ubicacion">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Descripción</mat-label>
+          <input matInput formControlName="descripcion">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>N° anillos</mat-label>
+          <input matInput type="number" formControlName="num_anillos">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Carbones por anillo</mat-label>
+          <input matInput type="number" formControlName="carbones_por_anillo">
+        </mat-form-field>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</form>
