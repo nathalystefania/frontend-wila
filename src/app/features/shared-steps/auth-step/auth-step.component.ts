@@ -17,6 +17,7 @@ import { AuthCredentials } from '../../../core/models/auth.models';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule],
   templateUrl: './auth-step.component.html',
+  styleUrl: './auth-step.component.scss',
 })
 export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
   private fb = inject(FormBuilder);

@@ -8,6 +8,7 @@ import { OnboardingStep } from '../../core/onboarding/onboarding-step';
 import { AuthStepComponent } from '../shared-steps/auth-step/auth-step.component';
 import { PlantaStepComponent } from '../shared-steps/planta-step/planta-step.component';
 import { MotoresStepComponent } from '../shared-steps/motores-step/motores-step.component';
+import { RevisionStepComponent } from '../shared-steps/revision-step/revision-step.component';
 import { AuthService } from '../../core/services/auth.service';
 import { OnboardingStateService } from '../../core/state/onboarding-state.service';
 
@@ -18,6 +19,7 @@ import { OnboardingStateService } from '../../core/state/onboarding-state.servic
     AuthStepComponent,
     PlantaStepComponent,
     MotoresStepComponent,
+    RevisionStepComponent,
     MatStepperModule,
     MatIconModule
   ],
@@ -38,6 +40,7 @@ export class OnboardingComponent implements OnInit {
   @ViewChild(AuthStepComponent) authStep?: AuthStepComponent;
   @ViewChild(PlantaStepComponent) plantaStep?: PlantaStepComponent;
   @ViewChild(MotoresStepComponent) motoresStep?: MotoresStepComponent;
+  @ViewChild(RevisionStepComponent) revisionStep?: RevisionStepComponent;
   @ViewChild(MatStepper) stepper?: MatStepper;
 
   ngOnInit() {
@@ -57,7 +60,12 @@ export class OnboardingComponent implements OnInit {
 
   get isMotoresStepCompleted(): boolean {
     const motores = this.onboardingState.getMotoresDraft();
-    return motores && motores.length > 0;
+    return motores && motores.length > 0 && motores.every(m => m.codigo && m.modelo !== undefined && m.num_anillos && m.carbones_por_anillo);
+  }
+
+  get isRevisionStepCompleted(): boolean {
+    // La revisión está completa si tiene todos los datos necesarios
+    return this.isAuthStepCompleted && this.isPlantaStepCompleted && this.isMotoresStepCompleted;
   }
 
   private determineCurrentStep(): number {
@@ -78,8 +86,15 @@ export class OnboardingComponent implements OnInit {
       return 2;
     }
 
-    // Si ya tiene todo, ir al paso 3 (revisión/siguiente)
+    // Si tiene motores ir al paso 3 (revisión)
+    const motoresCompletos = motores.every(m => m.codigo && m.modelo !== undefined);
+    if (!motoresCompletos) {
+      return 2; // Si los motores no están completos, quedarse en el paso 2
+    }
+    
+    // Si tiene todo, ir al paso 3 (revisión/siguiente)
     return 3;
+    
   }
 
   back() {
@@ -106,7 +121,7 @@ export class OnboardingComponent implements OnInit {
       case 0: return true; // Siempre puede ir a auth
       case 1: return this.isAuthStepCompleted; // Necesita estar autenticado
       case 2: return this.isPlantaStepCompleted; // Necesita tener planta
-      case 3: return this.isMotoresStepCompleted; // Necesita tener motores
+      case 3: return this.isMotoresStepCompleted; // Necesita tener motores configurados
       default: return false; // Pasos futuros no disponibles aún
     }
   }
@@ -116,7 +131,7 @@ export class OnboardingComponent implements OnInit {
       case 0: return this.authStep ?? null;
       case 1: return this.plantaStep ?? null;
       case 2: return this.motoresStep ?? null;
-      case 3: return this.motoresStep ?? null;
+      case 3: return this.revisionStep ?? null;
       default: return null;
     }
   }

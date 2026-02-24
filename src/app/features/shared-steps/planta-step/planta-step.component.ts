@@ -16,6 +16,7 @@ import { PlantaDraft } from '../../../core/models/planta.models';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule],
   templateUrl: './planta-step.component.html',
+  styleUrl: './planta-step.component.scss',
 })
 export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
   private fb = inject(FormBuilder);

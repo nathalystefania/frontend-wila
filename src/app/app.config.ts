@@ -5,13 +5,15 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { authErrorInterceptor } from './core/interceptors/auth-error.interceptor';
+import { provideAppIcons } from './core/icons/icons.provider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideAppIcons(),
     provideRouter(routes),
     provideHttpClient(
       withFetch(),
       withInterceptors([authInterceptor, authErrorInterceptor])
-    )
+    ),
   ]
 };

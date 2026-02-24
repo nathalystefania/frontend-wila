@@ -1,0 +1,45 @@
+<h2>Revisión de la configuración</h2>
+
+<p>Revisa todos los datos ingresados antes de continuar:</p>
+
+<!-- Resumen de autenticación -->
+<div *ngIf="datosAuth" style="margin-bottom: 24px;">
+  <h3>👤 Usuario</h3>
+  <div style="background: #f5f5f5; padding: 16px; border-radius: 4px;">
+    <p><strong>Email:</strong> {{ datosAuth.email }}</p>
+    <p><strong>ID:</strong> {{ datosAuth.userId }}</p>
+  </div>
+</div>
+
+<!-- Resumen de planta -->
+<div *ngIf="datosPlanta" style="margin-bottom: 24px;">
+  <h3>🏭 Planta</h3>
+  <div style="background: #f5f5f5; padding: 16px; border-radius: 4px;">
+    <p><strong>Nombre:</strong> {{ datosPlanta.nombre }}</p>
+    <p><strong>Ubicación:</strong> {{ datosPlanta.ubicacion || 'No especificada' }}</p>
+    <p><strong>Email notificaciones:</strong> {{ datosPlanta.email_notificaciones || 'No especificado' }}</p>
+    <p><strong>ID de planta:</strong> {{ plantaId }}</p>
+  </div>
+</div>
+
+<!-- Resumen de motores -->
+<div *ngIf="motores && motores.length" style="margin-bottom: 24px;">
+  <h3>⚙️ Motores ({{ motores.length }})</h3>
+  <div style="background: #f5f5f5; padding: 16px; border-radius: 4px;">
+    <div *ngFor="let motor of motores; let i = index" style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #ddd;">
+      <h4>{{ motor.codigo }} - {{ motor.modelo }}</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px;">
+        <div><strong>Ubicación:</strong> {{ motor.ubicacion || 'No especificada' }}</div>
+        <div><strong>N° Anillos:</strong> {{ motor.num_anillos }}</div>
+        <div><strong>Carbones/anillo:</strong> {{ motor.carbones_por_anillo }}</div>
+        <div><strong>Alto carbón:</strong> {{ motor.alto_carbon_mm ? motor.alto_carbon_mm + ' mm' : 'No especificado' }}</div>
+        <div><strong>Prealarma:</strong> {{ motor.prealarma_mm ? motor.prealarma_mm + ' mm' : 'No especificado' }}</div>
+        <div><strong>Mínimo cambio:</strong> {{ motor.minimo_cambio_mm ? motor.minimo_cambio_mm + ' mm' : 'No especificado' }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="!canContinue()" style="color: red; margin-top: 16px;">
+  ⚠️ Faltan datos para completar la configuración. Revisa los pasos anteriores.
+</div>

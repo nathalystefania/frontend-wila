@@ -4,48 +4,101 @@
   {{ error }}
 </div>
 
-<form [formGroup]="form">
-  <mat-accordion multi="true">
-    <mat-expansion-panel *ngFor="let motor of motores.controls; let i = index" [expanded]="i === 0">
-      <mat-expansion-panel-header>
-        <mat-panel-title>
-          <span *ngIf="panelIcon(i) === 'ok'">✔️</span>
-          <span *ngIf="panelIcon(i) === 'warn'">⚠️</span>
-          Motor {{ i + 1 }} — {{ motor.get('codigo')?.value }}
-        </mat-panel-title>
-      </mat-expansion-panel-header>
+<!-- ETAPA 1: Datos básicos -->
+<div *ngIf="etapa === 'basicos'">
+  <h3>Paso 1: Datos básicos de los motores</h3>
+  
+  <form [formGroup]="formBasicos">
+    <mat-accordion multi="true">
+      <mat-expansion-panel *ngFor="let motor of motoresBasicos.controls; let i = index" [expanded]="i === 0">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            Motor {{ i + 1 }} — {{ motor.get('codigo')?.value }}
+          </mat-panel-title>
+        </mat-expansion-panel-header>
 
-      <div [formGroup]="$any(motor)">
+        <div [formGroup]="$any(motor)" style="display: flex; flex-direction: column; gap: 16px;">
+          <mat-form-field appearance="outline">
+            <mat-label>Código *</mat-label>
+            <input matInput formControlName="codigo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Modelo *</mat-label>
+            <input matInput formControlName="modelo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Ubicación</mat-label>
+            <input matInput formControlName="ubicacion">
+          </mat-form-field>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+  </form>
+
+  <div style="margin-top: 24px;">
+    <button type="button" mat-raised-button color="primary" (click)="guardarBasicos()" [disabled]="!formBasicos.valid">
+      Guardar y Continuar
+    </button>
+  </div>
+</div>
+
+<!-- ETAPA 2: Configuración técnica -->
+<div *ngIf="etapa === 'configuracion'" style="display: flex; gap: 16px;">
+  <!-- Lista de motores -->
+  <div style="width: 300px; border: 1px solid #ddd; border-radius: 4px;">
+    <mat-nav-list>
+      <mat-list-item
+        *ngFor="let motor of motoresBasicos.controls; let i = index"
+        (click)="selectMotor(i)"
+        [style.background-color]="selectedMotorIndex === i ? '#e3f2fd' : 'transparent'"
+        [style.border-left]="selectedMotorIndex === i ? '4px solid #1976d2' : '4px solid transparent'"
+        style="cursor: pointer; border-bottom: 1px solid #eee;">
+        
+        <mat-icon matListItemIcon *ngIf="isMotorConfigCompleted(i)" color="primary">check_circle</mat-icon>
+        <mat-icon matListItemIcon *ngIf="!isMotorConfigCompleted(i)" color="warn">warning</mat-icon>
+        
+        <div matListItemTitle>{{ getMotorCodigoByIndex(i) }}</div>
+        <div matListItemLine>Motor {{ i + 1 }}</div>
+      </mat-list-item>
+    </mat-nav-list>
+  </div>
+
+  <!-- Formulario de configuración técnica -->
+  <div style="flex: 1;">
+    <h3>Configuración técnica - {{ getMotorCodigoByIndex(selectedMotorIndex) }}</h3>
+    
+    <form [formGroup]="formConfiguracion">
+      <div *ngIf="motoresConfiguracion.at(selectedMotorIndex) as motorForm" 
+           [formGroup]="$any(motorForm)" 
+           style="display: flex; flex-direction: column; gap: 16px; max-width: 400px;">
+        
         <mat-form-field appearance="outline">
-          <mat-label>Código</mat-label>
-          <input matInput formControlName="codigo">
+          <mat-label>N° anillos *</mat-label>
+          <input matInput type="number" formControlName="num_anillos" min="1" max="10">
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Modelo</mat-label>
-          <input matInput formControlName="modelo">
+          <mat-label>Carbones por anillo *</mat-label>
+          <input matInput type="number" formControlName="carbones_por_anillo" min="1" max="50">
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Ubicación</mat-label>
-          <input matInput formControlName="ubicacion">
+          <mat-label>Alto carbón (mm)</mat-label>
+          <input matInput type="number" formControlName="alto_carbon_mm">
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>Descripción</mat-label>
-          <input matInput formControlName="descripcion">
+          <mat-label>Prealarma (mm)</mat-label>
+          <input matInput type="number" formControlName="prealarma_mm">
         </mat-form-field>
 
         <mat-form-field appearance="outline">
-          <mat-label>N° anillos</mat-label>
-          <input matInput type="number" formControlName="num_anillos">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Carbones por anillo</mat-label>
-          <input matInput type="number" formControlName="carbones_por_anillo">
+          <mat-label>Mínimo cambio (mm)</mat-label>
+          <input matInput type="number" formControlName="minimo_cambio_mm">
         </mat-form-field>
       </div>
-    </mat-expansion-panel>
-  </mat-accordion>
-</form>
+    </form>
+  </div>
+</div>
