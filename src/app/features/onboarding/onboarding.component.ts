@@ -2,6 +2,7 @@ import { Component, ViewChild, ChangeDetectorRef, inject, OnInit } from '@angula
 import { CommonModule } from '@angular/common';
 import { MatStepperModule, MatStepper } from '@angular/material/stepper';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
 import { OnboardingStep } from '../../core/onboarding/onboarding-step';
 
@@ -21,7 +22,8 @@ import { OnboardingStateService } from '../../core/state/onboarding-state.servic
     MotoresStepComponent,
     RevisionStepComponent,
     MatStepperModule,
-    MatIconModule
+    MatIconModule,
+    MatButtonModule
   ],
   templateUrl: './onboarding.component.html',
   styleUrl: './onboarding.component.scss',
@@ -32,6 +34,8 @@ export class OnboardingComponent implements OnInit {
 
   loadingNext = false;
   nextError = '';
+  showExplanation = false;
+  hideNavigationButtons = false;
 
   private cdr = inject(ChangeDetectorRef);
   private authService = inject(AuthService);
@@ -68,6 +72,25 @@ export class OnboardingComponent implements OnInit {
     return this.isAuthStepCompleted && this.isPlantaStepCompleted && this.isMotoresStepCompleted;
   }
 
+  get canCurrentStepContinue(): boolean {
+    const activeStep = this.getActiveStep();
+    if (!activeStep) return false;
+    
+    // Si el step tiene el método canContinue, usarlo
+    if ('canContinue' in activeStep && typeof activeStep.canContinue === 'function') {
+      return activeStep.canContinue();
+    }
+    
+    // Fallback a validaciones por step
+    switch (this.currentStep) {
+      case 0: return this.isAuthStepCompleted;
+      case 1: return this.isPlantaStepCompleted;
+      case 2: return this.isMotoresStepCompleted;
+      case 3: return this.isRevisionStepCompleted;
+      default: return false;
+    }
+  }
+
   private determineCurrentStep(): number {
     // Si no está autenticado, empezar desde el paso 0
     if (!this.authService.isAuthenticated()) {
@@ -98,7 +121,19 @@ export class OnboardingComponent implements OnInit {
   }
 
   back() {
-    if (this.currentStep > 0) this.currentStep--;
+    if (this.currentStep > 0) {
+      this.currentStep--;
+      
+      // Resetear hideNavigationButtons al retroceder de paso
+      // Solo el paso de motores en etapa 'basicos' debe ocultar los botones
+      if (this.currentStep !== 2) {
+        this.hideNavigationButtons = false;
+      }
+    }
+  }
+
+  onHideNavigationButtons(hide: boolean) {
+    this.hideNavigationButtons = hide;
   }
 
   onStepChange(event: StepperSelectionEvent) {
@@ -107,6 +142,13 @@ export class OnboardingComponent implements OnInit {
     
     if (this.canNavigateToStep(targetStep)) {
       this.currentStep = targetStep;
+      
+      // Resetear hideNavigationButtons cuando se cambia de paso
+      // Solo el paso de motores en etapa 'basicos' debe ocultar los botones
+      if (targetStep !== 2) {
+        this.hideNavigationButtons = false;
+      }
+      
       console.log('Step cambiado a:', this.currentStep);
     } else {
       // Revertir al paso actual si no puede navegar
@@ -151,6 +193,13 @@ export class OnboardingComponent implements OnInit {
       
       if (this.currentStep < this.maxStep) {
         this.currentStep++;
+        
+        // Resetear hideNavigationButtons al avanzar de paso
+        // Solo el paso de motores en etapa 'basicos' debe ocultar los botones
+        if (this.currentStep !== 2) {
+          this.hideNavigationButtons = false;
+        }
+        
         console.log('➡️ Advanced to step:', this.currentStep); // Debug
       }
     } catch (e: any) {
@@ -166,4 +215,9 @@ export class OnboardingComponent implements OnInit {
       setTimeout(() => this.cdr.detectChanges(), 0);
     }
   }
+
+  toggleExplanation() {
+    this.showExplanation = !this.showExplanation;
+  }
+
 }

@@ -1,104 +1,228 @@
-<h2>Configuración de motores</h2>
-
-<div *ngIf="error" style="color:red; margin-bottom: 12px;">
-  {{ error }}
-</div>
-
-<!-- ETAPA 1: Datos básicos -->
-<div *ngIf="etapa === 'basicos'">
-  <h3>Paso 1: Datos básicos de los motores</h3>
-  
-  <form [formGroup]="formBasicos">
-    <mat-accordion multi="true">
-      <mat-expansion-panel *ngFor="let motor of motoresBasicos.controls; let i = index" [expanded]="i === 0">
-        <mat-expansion-panel-header>
-          <mat-panel-title>
-            Motor {{ i + 1 }} — {{ motor.get('codigo')?.value }}
-          </mat-panel-title>
-        </mat-expansion-panel-header>
-
-        <div [formGroup]="$any(motor)" style="display: flex; flex-direction: column; gap: 16px;">
-          <mat-form-field appearance="outline">
-            <mat-label>Código *</mat-label>
-            <input matInput formControlName="codigo">
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Modelo *</mat-label>
-            <input matInput formControlName="modelo">
-          </mat-form-field>
-
-          <mat-form-field appearance="outline">
-            <mat-label>Ubicación</mat-label>
-            <input matInput formControlName="ubicacion">
-          </mat-form-field>
-        </div>
-      </mat-expansion-panel>
-    </mat-accordion>
-  </form>
-
-  <div style="margin-top: 24px;">
-    <button type="button" mat-raised-button color="primary" (click)="guardarBasicos()" [disabled]="!formBasicos.valid">
-      Guardar y Continuar
-    </button>
-  </div>
-</div>
-
-<!-- ETAPA 2: Configuración técnica -->
-<div *ngIf="etapa === 'configuracion'" style="display: flex; gap: 16px;">
-  <!-- Lista de motores -->
-  <div style="width: 300px; border: 1px solid #ddd; border-radius: 4px;">
-    <mat-nav-list>
-      <mat-list-item
-        *ngFor="let motor of motoresBasicos.controls; let i = index"
-        (click)="selectMotor(i)"
-        [style.background-color]="selectedMotorIndex === i ? '#e3f2fd' : 'transparent'"
-        [style.border-left]="selectedMotorIndex === i ? '4px solid #1976d2' : '4px solid transparent'"
-        style="cursor: pointer; border-bottom: 1px solid #eee;">
-        
-        <mat-icon matListItemIcon *ngIf="isMotorConfigCompleted(i)" color="primary">check_circle</mat-icon>
-        <mat-icon matListItemIcon *ngIf="!isMotorConfigCompleted(i)" color="warn">warning</mat-icon>
-        
-        <div matListItemTitle>{{ getMotorCodigoByIndex(i) }}</div>
-        <div matListItemLine>Motor {{ i + 1 }}</div>
-      </mat-list-item>
-    </mat-nav-list>
+<div class="grid place-content-center gap-8">
+  <div class="flex flex-col items-center justify-center text-center gap-4 max-w-3/4 mx-auto">
+    <img src="assets/images/isotipo-wila.svg" alt="Logo Wila" class="w-16 mx-auto" />
+    <h1>Configuración de motores</h1>
+    @if (etapa === 'basicos') {
+      <p>
+        Asigna un código, modelo y ubicación a cada motor creado. <br />
+        Esta información permite identificar cada motor dentro de la planta y facilita su gestión.
+      </p>
+    }
+    @if (etapa === 'configuracion') {
+      <p>
+        Se definen los parámetros de cada motor, como la cantidad de anillos y las características
+        de los carbones.
+      </p>
+    }
   </div>
 
-  <!-- Formulario de configuración técnica -->
-  <div style="flex: 1;">
-    <h3>Configuración técnica - {{ getMotorCodigoByIndex(selectedMotorIndex) }}</h3>
-    
-    <form [formGroup]="formConfiguracion">
-      <div *ngIf="motoresConfiguracion.at(selectedMotorIndex) as motorForm" 
-           [formGroup]="$any(motorForm)" 
-           style="display: flex; flex-direction: column; gap: 16px; max-width: 400px;">
-        
-        <mat-form-field appearance="outline">
-          <mat-label>N° anillos *</mat-label>
-          <input matInput type="number" formControlName="num_anillos" min="1" max="10">
-        </mat-form-field>
+  @if (error) {
+    <div class="text-error-20">
+      {{ error }}
+    </div>
+  }
+      <!-- Botón temporal para borrar datos -->
+      <button
+        mat-stroked-button
+        color="warn"
+        (click)="borrarDatosMotores()"
+        style="font-size: 12px; padding: 4px 8px"
+      >
+        🗑️ Borrar datos (temporal)
+      </button>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Carbones por anillo *</mat-label>
-          <input matInput type="number" formControlName="carbones_por_anillo" min="1" max="50">
-        </mat-form-field>
+  <!-- ETAPA 1: Datos básicos -->
+  @if (etapa === 'basicos') {
+    <div class="w-3/4 mx-auto">
+      <form [formGroup]="formBasicos">
+        <mat-accordion multi="true">
+          @for (motor of motoresBasicos.controls; track $index) {
+            <mat-expansion-panel [expanded]="$index === 0">
+              <mat-expansion-panel-header>
+                <mat-panel-title>
+                  <div class="flex align-items-center text-primary-950">
+                    @if (motor.get('codigo')?.value && motor.get('modelo')?.value) {
+                      <mat-icon class="me-2 !text-success-20">check_circle</mat-icon>
+                      {{ motor.get('codigo')?.value }} — Motor {{ $index + 1 }}
+                    } @else {
+                      <mat-icon class="me-2 !text-hover-accent">warning</mat-icon>
+                      Motor {{ $index + 1 }} — {{ motor.get('codigo')?.value }}
+                    }
+                  </div>
+                </mat-panel-title>
+              </mat-expansion-panel-header>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Alto carbón (mm)</mat-label>
-          <input matInput type="number" formControlName="alto_carbon_mm">
-        </mat-form-field>
+              <div [formGroup]="$any(motor)" class="flex flex-col gap-4">
+                <mat-form-field appearance="outline">
+                  <mat-label>Código / ID</mat-label>
+                  <input matInput formControlName="codigo" />
+                </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Prealarma (mm)</mat-label>
-          <input matInput type="number" formControlName="prealarma_mm">
-        </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Modelo</mat-label>
+                  <input matInput formControlName="modelo" />
+                </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Mínimo cambio (mm)</mat-label>
-          <input matInput type="number" formControlName="minimo_cambio_mm">
-        </mat-form-field>
+                <mat-form-field appearance="outline">
+                  <mat-label>Ubicación</mat-label>
+                  <input
+                    matInput
+                    formControlName="ubicacion"
+                    placeholder="Ubicación en la planta"
+                  />
+                </mat-form-field>
+              </div>
+            </mat-expansion-panel>
+          }
+        </mat-accordion>
+      </form>
+
+      <div class="flex justify-end mt-6">
+        <button
+          matButton="filled"
+          type="button"
+          class="btn-secondary btn-icon-right"
+          (click)="guardarBasicos()"
+          [disabled]="!formBasicos.valid"
+        >
+          Guardar y Continuar
+          <mat-icon>arrow_right_alt</mat-icon>
+        </button>
       </div>
-    </form>
-  </div>
+    </div>
+  }
+
+  <!-- ETAPA 2: Configuración técnica -->
+  @if (etapa === 'configuracion') {
+    <div class="flex gap-2">
+      <!-- Lista de motores -->
+      <div>
+        <mat-nav-list class="!p-0">
+          @for (motor of motoresBasicos.controls; track $index) {
+            <mat-list-item
+              (click)="selectMotor($index)"
+              [activated]="selectedMotorIndex === $index"
+              [class.motor-incomplete]="!isMotorConfigCompleted($index)"
+              [class.motor-completed]="isMotorConfigCompleted($index)"
+            >
+              <div matListItemTitle>{{ getMotorCodigoByIndex($index) }}</div>
+              <div matListItemLine>Motor {{ $index + 1 }}</div>
+              <div matListItemMeta>
+                <mat-icon 
+                  [color]="isMotorConfigCompleted($index) ? 'primary' : 'warn'">
+                  {{ isMotorConfigCompleted($index) ? 'check_circle' : 'warning' }}
+                </mat-icon>
+              </div>
+            </mat-list-item>
+          }
+        </mat-nav-list>
+      </div>
+
+      <!-- Formulario de configuración técnica -->
+      <div class="flex-1 bg-white p-4">
+        <h3 class="mb-4">Motor {{ getMotorCodigoByIndex(selectedMotorIndex) }}</h3>
+
+        <form [formGroup]="formConfiguracion">
+          <div
+            *ngIf="motoresConfiguracion.at(selectedMotorIndex) as motorForm"
+            [formGroup]="$any(motorForm)"
+            class="grid"
+          >
+            <h4 class="mb-4">Estructura del motor</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <mat-form-field appearance="outline" floatLabel="always">
+                <mat-label>¿Cuántos anillos tiene este motor?</mat-label>
+                <input matInput type="number" formControlName="num_anillos" min="1" max="10" placeholder="ej: 2" />
+              </mat-form-field>
+              <mat-form-field appearance="outline" floatLabel="always">
+                <mat-label>¿Cuántos carbones tiene un aniillo?</mat-label>
+                <input
+                  matInput
+                  type="number"
+                  formControlName="carbones_por_anillo"
+                  min="1"
+                  max="50"
+                  placeholder="ej: 8"
+                />
+              </mat-form-field>
+            </div>
+
+            <h4 class="mb-4">Parámetros de los carbones</h4>
+            <div class="grid grid-cols-2 gap-4">
+              <div class="flex flex-col">
+                <mat-form-field appearance="outline" floatLabel="always">
+                  <mat-label>Largo del carbón nuevo</mat-label>
+                  <input 
+                    matInput 
+                    type="text" 
+                    inputmode="numeric" 
+                    formControlName="alto_carbon_mm" 
+                    maxlength="6" 
+                    placeholder="Ingresar medida en milímetros"
+                    (focus)="onFieldFocus('alto_carbon_mm')"
+                    (blur)="onFieldBlur()" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" floatLabel="always">
+                  <mat-label>Largo de pre alarma</mat-label>
+                  <input 
+                    matInput 
+                    type="text" 
+                    inputmode="numeric" 
+                    formControlName="prealarma_mm" 
+                    maxlength="6" 
+                    placeholder="Ingresar medida en milímetros"
+                    (focus)="onFieldFocus('prealarma_mm')"
+                    (blur)="onFieldBlur()" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" floatLabel="always">
+                  <mat-label>Largo mínimo de cambio por pauta</mat-label>
+                  <input 
+                    matInput 
+                    type="text" 
+                    inputmode="numeric" 
+                    formControlName="minimo_cambio_mm" 
+                    maxlength="6" 
+                    placeholder="Ingresar medida en milímetros"
+                    (focus)="onFieldFocus('minimo_cambio_mm')"
+                    (blur)="onFieldBlur()" />
+                </mat-form-field>
+              </div>
+              <div class="flex align-items-center justify-center relative">
+                <div [ngClass]="['cota-carbon', getCssClassForField()]">
+                  {{ getValueForField(motorForm) }} mm
+                </div>
+                <img [src]="getImageForField()" [alt]="getLabelForField()" class="max-w-full h-auto">
+              </div>
+            </div>
+          </div>
+        </form>
+
+        <div [ngClass]="[motoresBasicos.controls.length > 1 ? 'justify-between' : 'justify-center', 'flex', 'items-center', 'mt-4']">
+          @if (motoresBasicos.controls.length > 1) {
+            <button 
+              mat-button
+              (click)="goToPreviousMotor()"
+              [disabled]="!canGoToPreviousMotor()"
+              class="btn-secondary">
+              <mat-icon>arrow_back</mat-icon>
+              Motor anterior
+            </button>
+          }
+          <span class="text-sm text-gray-600">
+            {{ selectedMotorIndex + 1 }} de {{ motoresBasicos.controls.length }}
+          </span>
+          @if (motoresBasicos.controls.length > 1) {
+            <button 
+              mat-button
+              (click)="goToNextMotor()"
+              [disabled]="!canGoToNextMotor()"
+              class="btn-secondary flex-row-reverse gap-2">
+              Motor siguiente
+              <mat-icon>arrow_forward</mat-icon>
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </div>

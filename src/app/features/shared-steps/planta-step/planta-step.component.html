@@ -1,27 +1,33 @@
-<h2>Definición de la planta</h2>
-
-<form [formGroup]="form">
-  <mat-form-field appearance="outline">
-    <mat-label>Nombre</mat-label>
-    <input matInput formControlName="nombre" />
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Ubicación</mat-label>
-    <input matInput formControlName="ubicacion" />
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Email notificaciones</mat-label>
-    <input matInput type="email" formControlName="email_notificaciones" />
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Cantidad de motores</mat-label>
-    <input matInput type="number" formControlName="cantidad_motores" />
-  </mat-form-field>
-
-  <div *ngIf="error" style="color:red; margin: 8px 0;">
-    {{ error }}
+<div class="grid place-content-center gap-12">
+  <div class="flex flex-col items-center justify-center text-center gap-4 max-w-2/3 mx-auto">
+    <img src="assets/images/isotipo-wila.svg" alt="Logo Wila" class="w-16 mx-auto">
+    <h1>Definición de la planta</h1>
+    <p>Indica cuántos motores forman parte de la planta. Con este dato se crea la estructura inicial para la configuración.</p>
   </div>
-</form>
+
+  <form class="grid gap-8 w-2/3 mx-auto" [formGroup]="form">
+    <mat-form-field appearance="outline">
+      <mat-label>Nombre de la planta</mat-label>
+      <input matInput formControlName="nombre" />
+      <mat-hint>Sucursal o unidad operativa donde se instalará el sistema.</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Ubicación</mat-label>
+      <input matInput formControlName="ubicacion" />
+      <mat-hint>Sector específico dentro de la planta.</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Cantidad de motores</mat-label>
+      <input matInput type="number" formControlName="cantidad_motores" />
+      <mat-hint>Número de motores que se configurarán y monitorearán.</mat-hint>
+    </mat-form-field>
+
+    @if (error) { 
+      <div class="text-error-20">
+        {{ error }}
+      </div>
+    }
+  </form>
+</div>

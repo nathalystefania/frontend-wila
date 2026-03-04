@@ -36,7 +36,6 @@
               }
             ],
             "styles": [
-              "src/material-theme.scss",
               "src/styles.scss"
             ]
           },
@@ -72,6 +71,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "frontend-wila:build:production"

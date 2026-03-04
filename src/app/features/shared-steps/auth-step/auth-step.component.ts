@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Subscription, firstValueFrom, timeout } from 'rxjs';
 
+import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,7 +16,7 @@ import { AuthCredentials } from '../../../core/models/auth.models';
 @Component({
   selector: 'app-auth-step',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule],
   templateUrl: './auth-step.component.html',
   styleUrl: './auth-step.component.scss',
 })
@@ -29,11 +30,22 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
   mode: 'register' | 'login' = 'register';
   error = '';
   loading = false;
+  showPassword = false;
+  showConfirmPassword = false;
 
   form = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(6)]],
-  });
+    confirmPassword: [''],
+  }, { validators: this.passwordMatchValidator.bind(this) });
+
+  private passwordMatchValidator(group: any) {
+    const mode = this.mode;
+    if (mode === 'login') return null; // No validar en login
+    const password = group.get('password')?.value;
+    const confirmPassword = group.get('confirmPassword')?.value;
+    return password === confirmPassword ? null : { passwordsMismatch: true };
+  }
 
   ngOnInit(): void {
     const draft = this.state.getAuthDraft();
@@ -57,6 +69,14 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
     this.mode = this.mode === 'register' ? 'login' : 'register';
     const email = (this.form.get('email')?.value ?? '').trim().toLowerCase();
     this.state.setAuthDraft({ email, mode: this.mode });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword = !this.showConfirmPassword;
   }
 
   canContinue(): boolean {

@@ -1,0 +1,47 @@
+@use '@angular/material' as mat;
+@use '../../styles/theme_theme-colors.scss' as theme;
+
+$app-theme: mat.define-theme(
+  (
+    color: (
+      theme-type: light,
+      primary: mat.$azure-palette,
+      tertiary: mat.$magenta-palette,
+      use-system-variables: true,
+      system-variables-prefix: mat,
+    ),
+    typography: (
+      plain-family: "Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
+      brand-family: "Works, Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif",
+    )
+  )
+);
+
+body {
+    background: #f9f9f9;
+    font-family: "Inter", sans-serif;
+}
+
+.material-icons {
+    font-family: 'Material Symbols Outlined';
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: var(--color-primary-950);
+    font-family: "Work Sans", sans-serif;
+}
+
+.btn-secondary {
+    @include mat.button-color($app-theme, $color-variant: secondary);
+}
+
+.btn-icon-right {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    gap: 8px;
+
+    &.mat-mdc-unelevated-button>.mat-icon {
+        margin-left: 0;
+        margin-right: 0;
+    }
+}

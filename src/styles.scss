@@ -1,4 +1,6 @@
+@use './material-theme';
 @use "tailwindcss";
+@use './assets/scss/global';
 
 @theme {
     --color-primary: rgb(14 25 60);
@@ -93,4 +95,16 @@
     /* #171717 */
     --color-white: rgb(255 255 255);
     /* #ffffff */
+}
+
+h1 {
+    @apply text-3xl font-bold text-primary-950;
+}
+
+h3 {
+    @apply text-xl font-semibold text-primary-950;
+}
+
+h4 {
+    @apply text-base font-semibold text-primary-950;
 }

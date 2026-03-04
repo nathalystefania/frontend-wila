@@ -31,7 +31,6 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
   form = this.fb.group({
     nombre: ['', Validators.required],
     ubicacion: [''],
-    email_notificaciones: [''],
     cantidad_motores: [1, [Validators.required, Validators.min(1), Validators.max(50)]],
   });
 
@@ -43,7 +42,6 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
       this.form.patchValue({
         nombre: draft.nombre ?? '',
         ubicacion: draft.ubicacion ?? '',
-        email_notificaciones: draft.email_notificaciones ?? ''
       }, { emitEvent: false });
     }
 
@@ -54,10 +52,9 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
     this.sub = this.form.valueChanges.subscribe(v => {
       const nombre = (v.nombre ?? '').trim();
       const ubicacion = (v.ubicacion ?? '').trim() || null;
-      const email = (v.email_notificaciones ?? '').trim().toLowerCase() || null;
-
+      
       if (nombre) {
-        this.state.setPlantaDraft({ nombre, ubicacion, email_notificaciones: email });
+        this.state.setPlantaDraft({ nombre, ubicacion });
       }
 
       const n = Number(v.cantidad_motores);
@@ -86,7 +83,6 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
     const body: PlantaDraft = {
       nombre: (v.nombre ?? '').trim(),
       ubicacion: (v.ubicacion ?? '').trim() || null,
-      email_notificaciones: (v.email_notificaciones ?? '').trim().toLowerCase() || null,
     };
 
     this.state.setPlantaDraft(body);

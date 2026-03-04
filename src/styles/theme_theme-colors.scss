@@ -24,7 +24,7 @@ $_palettes: (
     99: #fefbff,
     100: #ffffff,
   ),
-  secondary: (
+  tertiary: (
     0: #000000,
     10: #171b29,
     20: #2c303f,
@@ -42,7 +42,7 @@ $_palettes: (
     99: #fefbff,
     100: #ffffff,
   ),
-  tertiary: (
+  secondary: (
     0: #000000,
     10: #370e00,
     20: #5a1c00,
@@ -126,13 +126,10 @@ $_palettes: (
   ),
 );
 
-$_rest: (
-  secondary: map.get($_palettes, secondary),
-  neutral: map.get($_palettes, neutral),
-  neutral-variant: map.get($_palettes,  neutral-variant),
-  error: map.get($_palettes, error),
-);
+$primary-palette: map.get($_palettes, primary);
+$secondary-tonal-palette: map.get($_palettes, secondary);
+$accent-tonal-palette: map.get($_palettes, neutral-variant);
+$error-tonal-palette: map.get($_palettes, error);
 
-$primary-palette: map.merge(map.get($_palettes, primary), $_rest);
-$tertiary-palette: map.merge(map.get($_palettes, tertiary), $_rest);
-$error-palette: map.merge(map.get($_palettes, error), $_rest);
+$neutral-palette: map.get($_palettes, neutral);
+$neutral-variant-palette: map.get($_palettes, neutral-variant);

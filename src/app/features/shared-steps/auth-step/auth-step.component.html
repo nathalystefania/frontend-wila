@@ -1,21 +1,46 @@
-<h2>{{ mode === 'register' ? 'Crear cuenta' : 'Iniciar sesión' }}</h2>
-
-<form [formGroup]="form">
-  <mat-form-field appearance="outline">
-    <mat-label>Email</mat-label>
-    <input matInput type="email" formControlName="email">
-  </mat-form-field>
-
-  <mat-form-field appearance="outline">
-    <mat-label>Contraseña</mat-label>
-    <input matInput type="password" formControlName="password">
-  </mat-form-field>
-
-  <div *ngIf="error" style="color:red; margin: 8px 0;">
-    {{ error }}
+<div class="grid place-content-center gap-12">
+  <div class="flex flex-col items-center justify-center text-center gap-4 max-w-2/3 mx-auto">
+    <img src="assets/images/isotipo-wila.svg" alt="Logo Wila" class="w-16 mx-auto">
+    <h1>Configuración inicial</h1>
+    <p>Para comenzar, se deben ingresar algunos datos básicos que permitirán crear el acceso y guardar la configuración del sistema.</p>
   </div>
-
-  <button mat-button type="button" (click)="toggleMode()">
-    {{ mode === 'register' ? 'Ya tengo cuenta' : 'Crear cuenta' }}
-  </button>
-</form>
+  
+  <!-- <h2>{{ mode === 'register' ? 'Crear cuenta' : 'Iniciar sesión' }}</h2> -->
+  
+  <form class="grid gap-8 w-2/3 mx-auto" [formGroup]="form">
+    <mat-form-field appearance="outline">
+      <mat-label>Correo de acceso</mat-label>
+      <input matInput type="email" formControlName="email">
+    </mat-form-field>
+  
+    <mat-form-field appearance="outline">
+      <mat-label>Contraseña de acceso</mat-label>
+      <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password">
+      <mat-icon matSuffix (click)="togglePasswordVisibility()" style="cursor: pointer;">
+        {{ showPassword ? 'visibility_off' : 'visibility' }}
+      </mat-icon>
+    </mat-form-field>
+    
+    @if (mode === 'register') {
+      <mat-form-field appearance="outline">
+        <mat-label>Confirmar contraseña</mat-label>
+        <input matInput [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword">
+        <mat-icon matSuffix (click)="toggleConfirmPasswordVisibility()" style="cursor: pointer;">
+          {{ showConfirmPassword ? 'visibility_off' : 'visibility' }}
+        </mat-icon>
+      </mat-form-field>
+    }
+  
+    @if (error) { 
+    <div class="text-error-20">
+      {{ error }}
+    </div>
+    }
+  
+    <div class="inline-block text-center">
+      <a href="#" matButton class="inline-block !underline underline-offset-4" (click)="toggleMode()">
+        {{ mode === 'register' ? 'Ya tengo cuenta' : 'Crear cuenta' }}
+      </a>
+    </div>
+  </form>
+</div>
