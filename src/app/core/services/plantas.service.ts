@@ -8,17 +8,21 @@ export class PlantasService {
     private http = inject(HttpClient);
     private baseUrl = environment.apiUrl;
 
+    private buildUrl(endpoint: string): string {
+        return `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+    }
+
     // Obtener plantas del usuario autenticado
     getUserPlantas() {
-        return this.http.get<Planta[]>(`${this.baseUrl}/api/plantas`);
+        return this.http.get<Planta[]>(this.buildUrl('/api/plantas'));
     }
 
     createPlanta(body: PlantaDraft) {
-        return this.http.post<CreatePlantaResponse>(`${this.baseUrl}/api/plantas`, body);
+        return this.http.post<CreatePlantaResponse>(this.buildUrl('/api/plantas'), body);
     }
 
     // Actualizar planta existente
     updatePlanta(id: number, body: PlantaDraft) {
-        return this.http.put<Planta>(`${this.baseUrl}/api/plantas/${id}`, body);
+        return this.http.put<Planta>(this.buildUrl(`/api/plantas/${id}`), body);
     }
 }

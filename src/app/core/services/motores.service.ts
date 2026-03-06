@@ -23,9 +23,13 @@ export class MotoresService {
     private http = inject(HttpClient);
     private baseUrl = environment.apiUrl;
 
+    private buildUrl(endpoint: string): string {
+        return `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+    }
+
     // Crear un motor individual
     createMotor(plantaId: number, motor: MotorDraft) {
-        return this.http.post<CreateMotorResponse>(`${this.baseUrl}/api/plantas/${plantaId}/motores`, motor);
+        return this.http.post<CreateMotorResponse>(this.buildUrl(`/api/plantas/${plantaId}/motores`), motor);
     }
 
     // Verificar si ya existen motores en la planta
@@ -54,12 +58,12 @@ export class MotoresService {
 
     // Obtener motores de una planta
     getMotoresByPlanta(plantaId: number) {
-        return this.http.get<Motor[]>(`${this.baseUrl}/api/plantas/${plantaId}/motores`);
+        return this.http.get<Motor[]>(this.buildUrl(`/api/plantas/${plantaId}/motores`));
     }
 
     // Actualizar un motor individual
     updateMotor(motorId: number, motor: MotorDraft) {
-        return this.http.put<Motor>(`${this.baseUrl}/api/motores/${motorId}`, motor);
+        return this.http.put<Motor>(this.buildUrl(`/api/motores/${motorId}`), motor);
     }
 
     // Actualizar múltiples motores (hace varias llamadas individuales)

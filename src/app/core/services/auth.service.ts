@@ -57,12 +57,16 @@ export class AuthService {
         return isPlatformBrowser(this.platformId);
     }
 
+    private buildUrl(endpoint: string): string {
+        return `${this.baseUrl.replace(/\/$/, '')}/${endpoint.replace(/^\//, '')}`;
+    }
+
     register(data: AuthCredentials) {
-        return this.http.post<AuthResponse>(`${this.baseUrl}/api/auth/register`, data);
+        return this.http.post<AuthResponse>(this.buildUrl('/api/auth/register'), data);
     }
 
     login(data: AuthCredentials) {
-        return this.http.post<AuthResponse>(`${this.baseUrl}/api/auth/login`, data);
+        return this.http.post<AuthResponse>(this.buildUrl('/api/auth/login'), data);
     }
 
     saveSession(res: AuthResponse) {

@@ -49,11 +49,8 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
   });
 
   ngOnInit(): void {
-    console.log('🏭 PlantaStep - Inicializando componente');
-    
     // Verificar si ya estamos cargando para evitar llamadas múltiples
     if (this.loadingPlantas) {
-      console.log('🏭 PlantaStep - Ya está cargando, saltando inicialización');
       return;
     }
     
@@ -78,14 +75,10 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
   }
 
   private async loadUserPlanta(): Promise<void> {
-    console.log('🏭 PlantaStep - Iniciando loadUserPlanta, loadingPlantas:', this.loadingPlantas);
-    
     this.loadingPlantas = true;
     this.error = '';
     
     try {
-      console.log('🏭 PlantaStep - Cargando planta del usuario...');
-      
       // Agregar timeout a la llamada
       const timeout = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Timeout')), 10000)
@@ -94,14 +87,10 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
       const plantasPromise = firstValueFrom(this.plantasService.getUserPlantas());
       const plantas = await Promise.race([plantasPromise, timeout]) as Planta[];
       
-      console.log('🏭 PlantaStep - Respuesta recibida, plantas:', plantas.length);
-      
       if (plantas.length > 0) {
         // Usuario ya tiene una planta - modo edición
         this.plantaExistente = plantas[0]; // Solo tomamos la primera (debería ser única)
         this.isEditMode = true;
-        
-        console.log('🏭 PlantaStep - Planta existente encontrada:', this.plantaExistente);
         
         // Precargar datos en el formulario
         this.form.patchValue({
@@ -123,8 +112,6 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
         this.plantaExistente = null;
         this.isEditMode = false;
         
-        console.log('🏭 PlantaStep - No hay planta existente, modo creación');
-        
         // Cargar datos del borrador si existen
         const draft = this.state.getPlantaDraft();
         const cant = this.state.getCantidadMotores();
@@ -141,11 +128,7 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
         }
       }
       
-      console.log('🏭 PlantaStep - Configuración completada, isEditMode:', this.isEditMode);
-      
-    } catch (err: any) {
-      console.error('🏭 PlantaStep - Error cargando planta:', err);
-      
+    } catch (err: any) {  
       if (err.message === 'Timeout') {
         this.error = 'La carga de plantas está tardando demasiado. Intenta refrescar la página.';
       } else {
@@ -172,12 +155,11 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
       }
       
     } finally {
-      console.log('🏭 PlantaStep - Finalizando loadUserPlanta, estableciendo loadingPlantas = false');
       this.loadingPlantas = false;
       
       // Forzar detección de cambios
       setTimeout(() => {
-        console.log('🏭 PlantaStep - Estado final: loadingPlantas:', this.loadingPlantas, 'isEditMode:', this.isEditMode);
+        // console.log('🏭 PlantaStep - Estado final: loadingPlantas:', this.loadingPlantas, 'isEditMode:', this.isEditMode);
       }, 100);
     }
   }
@@ -187,14 +169,12 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
     
     // Limpiar estado de carga si el componente se destruye mientras está cargando
     if (this.loadingPlantas) {
-      console.log('🏭 PlantaStep - Componente destruido durante carga, limpiando estado');
       this.loadingPlantas = false;
     }
   }
 
   // Método de emergencia para resetear el estado de carga
   resetLoadingState(): void {
-    console.log('🏭 PlantaStep - Reseteando estado de carga manualmente');
     this.loadingPlantas = false;
     this.error = '';
     
@@ -225,21 +205,14 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
     try {
       if (this.isEditMode && this.plantaExistente) {
         // Actualizar planta existente
-        console.log('🏭 PlantaStep - Actualizando planta existente ID:', this.plantaExistente.id);
         const plantaActualizada = await firstValueFrom(this.plantasService.updatePlanta(this.plantaExistente.id, body));
         
         // Actualizar referencia local
-        this.plantaExistente = plantaActualizada;
-        
-        // El ID ya está en el estado desde el loadUserPlanta
-        console.log('🏭 PlantaStep - Planta actualizada exitosamente');
-        
+        this.plantaExistente = plantaActualizada;        
       } else {
         // Crear nueva planta
-        console.log('🏭 PlantaStep - Creando nueva planta:', body);
         const res = await firstValueFrom(this.plantasService.createPlanta(body));
         this.state.setPlantaId(res.id);
-        console.log('🏭 PlantaStep - Nueva planta creada con ID:', res.id);
       }
       
       // Actualizar draft en ambos casos
