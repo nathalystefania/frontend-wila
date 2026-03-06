@@ -4,7 +4,7 @@ publish = "dist/frontend-wila/browser"
 
 [[redirects]]
 from = "/api/*"
-to = "https://wila-py.onrender.com/api/:splat"
+to = "http://190.22.7.32:5000/api/:splat"
 status = 200
 force = true
 
