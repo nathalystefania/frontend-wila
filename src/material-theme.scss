@@ -111,7 +111,10 @@ $app-theme: mat.define-theme(
   /* #ffffff */
 
   --mat-secondary: var(--color-secondary-500);
+  --mat-tertiary: var(--color-accent);
+  --mat-on-primary: var(--color-white);
   --mat-on-secondary: var(--color-white);
+  --mat-on-tertiary: var(--color-color-disabled-textos);
   --mat-sys-on-surface: var(--color-primary-950);
 }
 
@@ -154,8 +157,10 @@ html {
       header-icon-background-color: var(--color-accent),
       header-icon-foreground-color: var(--color-primary-950),
       header-selected-state-icon-background-color: var(--color-secondary),
-      header-edit-state-icon-background-color: var(--color-accent),
-      header-edit-state-icon-foreground-color: var(--color-primary-950),
+      header-edit-state-icon-background-color: var(--color-secondary),
+      header-edit-state-icon-foreground-color: var(--color-white),
+      header-done-state-icon-background-color: var(--color-secondary),
+      header-done-state-icon-foreground-color: var(--color-white),
     )
   );
   @include mat.button-overrides(
@@ -197,8 +202,12 @@ body {
   height: 32px!important;
   width: 32px!important;
   
-  &-selected{
+  &-state-edit,
+  &-state-done{
     box-shadow: 0 0px 0px 6px rgb(255 103 31 / 20%), 0 0px 0px 6px rgb(255 103 31 / 30%);
+  }
+  &-selected{
+    box-shadow: 0 0px 0px 6px rgb(255 103 31 / 30%), 0 0px 0px 6px rgb(255 103 31 / 40%);
   }
 }
 .mat-stepper-vertical-line::before{
@@ -217,6 +226,7 @@ body {
       font-weight: 600;
     }
     .subtitle{
+      color: var(--color-accent);
       white-space: normal;
     }
   }
@@ -234,3 +244,7 @@ body {
   transform: translateZ(0);
   backface-visibility: hidden;
 }
+
+// .mdc-text-field--outlined:not(.mdc-text-field--disabled) .mdc-text-field__input.ng-pristine{
+//   color: var(--color-hover-accent);
+// }

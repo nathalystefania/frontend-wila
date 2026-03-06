@@ -1,4 +1,4 @@
-<div class="grid place-content-center gap-8">
+<div class="grid gap-8">
   <div class="flex flex-col items-center justify-center text-center gap-4 max-w-3/4 mx-auto">
     <img src="assets/images/isotipo-wila.svg" alt="Logo Wila" class="w-16 mx-auto" />
     <h1>Configuración de motores</h1>
@@ -21,15 +21,13 @@
       {{ error }}
     </div>
   }
-      <!-- Botón temporal para borrar datos -->
-      <button
-        mat-stroked-button
-        color="warn"
-        (click)="borrarDatosMotores()"
-        style="font-size: 12px; padding: 4px 8px"
-      >
-        🗑️ Borrar datos (temporal)
-      </button>
+
+  @if (loading) {
+    <div class="text-center py-4">
+      <mat-spinner class="mx-auto"></mat-spinner>
+      <p class="mt-2 text-gray-600">Guardando motores...</p>
+    </div>
+  }
 
   <!-- ETAPA 1: Datos básicos -->
   @if (etapa === 'basicos') {
@@ -53,17 +51,20 @@
               </mat-expansion-panel-header>
 
               <div [formGroup]="$any(motor)" class="flex flex-col gap-4">
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="outline" floatLabel="always">
                   <mat-label>Código / ID</mat-label>
                   <input matInput formControlName="codigo" />
+                  @if (motor.get('codigo')?.hasError('duplicate')) {
+                    <mat-error>Este código ya existe en otro motor</mat-error>
+                  }
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="outline" floatLabel="always">
                   <mat-label>Modelo</mat-label>
                   <input matInput formControlName="modelo" />
                 </mat-form-field>
 
-                <mat-form-field appearance="outline">
+                <mat-form-field appearance="outline" floatLabel="always">
                   <mat-label>Ubicación</mat-label>
                   <input
                     matInput
@@ -76,19 +77,6 @@
           }
         </mat-accordion>
       </form>
-
-      <div class="flex justify-end mt-6">
-        <button
-          matButton="filled"
-          type="button"
-          class="btn-secondary btn-icon-right"
-          (click)="guardarBasicos()"
-          [disabled]="!formBasicos.valid"
-        >
-          Guardar y Continuar
-          <mat-icon>arrow_right_alt</mat-icon>
-        </button>
-      </div>
     </div>
   }
 
@@ -102,14 +90,14 @@
             <mat-list-item
               (click)="selectMotor($index)"
               [activated]="selectedMotorIndex === $index"
+              class="mb-2"
               [class.motor-incomplete]="!isMotorConfigCompleted($index)"
               [class.motor-completed]="isMotorConfigCompleted($index)"
             >
               <div matListItemTitle>{{ getMotorCodigoByIndex($index) }}</div>
               <div matListItemLine>Motor {{ $index + 1 }}</div>
               <div matListItemMeta>
-                <mat-icon 
-                  [color]="isMotorConfigCompleted($index) ? 'primary' : 'warn'">
+                <mat-icon [color]="isMotorConfigCompleted($index) ? 'primary' : 'warn'">
                   {{ isMotorConfigCompleted($index) ? 'check_circle' : 'warning' }}
                 </mat-icon>
               </div>
@@ -132,7 +120,14 @@
             <div class="grid grid-cols-2 gap-4">
               <mat-form-field appearance="outline" floatLabel="always">
                 <mat-label>¿Cuántos anillos tiene este motor?</mat-label>
-                <input matInput type="number" formControlName="num_anillos" min="1" max="10" placeholder="ej: 2" />
+                <input
+                  matInput
+                  type="number"
+                  formControlName="num_anillos"
+                  min="1"
+                  max="10"
+                  placeholder="Ingresar un número"
+                />
               </mat-form-field>
               <mat-form-field appearance="outline" floatLabel="always">
                 <mat-label>¿Cuántos carbones tiene un aniillo?</mat-label>
@@ -142,7 +137,7 @@
                   formControlName="carbones_por_anillo"
                   min="1"
                   max="50"
-                  placeholder="ej: 8"
+                  placeholder="Ingresar un número"
                 />
               </mat-form-field>
             </div>
@@ -152,58 +147,73 @@
               <div class="flex flex-col">
                 <mat-form-field appearance="outline" floatLabel="always">
                   <mat-label>Largo del carbón nuevo</mat-label>
-                  <input 
-                    matInput 
-                    type="text" 
-                    inputmode="numeric" 
-                    formControlName="alto_carbon_mm" 
-                    maxlength="6" 
+                  <input
+                    matInput
+                    type="text"
+                    inputmode="numeric"
+                    formControlName="alto_carbon_mm"
+                    maxlength="6"
                     placeholder="Ingresar medida en milímetros"
                     (focus)="onFieldFocus('alto_carbon_mm')"
-                    (blur)="onFieldBlur()" />
+                    (blur)="onFieldBlur()"
+                  />
                 </mat-form-field>
                 <mat-form-field appearance="outline" floatLabel="always">
                   <mat-label>Largo de pre alarma</mat-label>
-                  <input 
-                    matInput 
-                    type="text" 
-                    inputmode="numeric" 
-                    formControlName="prealarma_mm" 
-                    maxlength="6" 
+                  <input
+                    matInput
+                    type="text"
+                    inputmode="numeric"
+                    formControlName="prealarma_mm"
+                    maxlength="6"
                     placeholder="Ingresar medida en milímetros"
                     (focus)="onFieldFocus('prealarma_mm')"
-                    (blur)="onFieldBlur()" />
+                    (blur)="onFieldBlur()"
+                  />
                 </mat-form-field>
                 <mat-form-field appearance="outline" floatLabel="always">
                   <mat-label>Largo mínimo de cambio por pauta</mat-label>
-                  <input 
-                    matInput 
-                    type="text" 
-                    inputmode="numeric" 
-                    formControlName="minimo_cambio_mm" 
-                    maxlength="6" 
+                  <input
+                    matInput
+                    type="text"
+                    inputmode="numeric"
+                    formControlName="minimo_cambio_mm"
+                    maxlength="6"
                     placeholder="Ingresar medida en milímetros"
                     (focus)="onFieldFocus('minimo_cambio_mm')"
-                    (blur)="onFieldBlur()" />
+                    (blur)="onFieldBlur()"
+                  />
                 </mat-form-field>
               </div>
               <div class="flex align-items-center justify-center relative">
                 <div [ngClass]="['cota-carbon', getCssClassForField()]">
                   {{ getValueForField(motorForm) }} mm
                 </div>
-                <img [src]="getImageForField()" [alt]="getLabelForField()" class="max-w-full h-auto">
+                <img
+                  [src]="getImageForField()"
+                  [alt]="getLabelForField()"
+                  class="max-w-full h-auto"
+                />
               </div>
             </div>
           </div>
         </form>
 
-        <div [ngClass]="[motoresBasicos.controls.length > 1 ? 'justify-between' : 'justify-center', 'flex', 'items-center', 'mt-4']">
+        <div
+          [ngClass]="[
+            motoresBasicos.controls.length > 1 ? 'justify-between' : 'justify-center',
+            'flex',
+            'items-center',
+            'mt-4',
+          ]"
+        >
           @if (motoresBasicos.controls.length > 1) {
-            <button 
+            <button
               mat-button
               (click)="goToPreviousMotor()"
               [disabled]="!canGoToPreviousMotor()"
-              class="btn-secondary">
+              class="btn-secondary"
+            >
               <mat-icon>arrow_back</mat-icon>
               Motor anterior
             </button>
@@ -212,11 +222,12 @@
             {{ selectedMotorIndex + 1 }} de {{ motoresBasicos.controls.length }}
           </span>
           @if (motoresBasicos.controls.length > 1) {
-            <button 
+            <button
               mat-button
               (click)="goToNextMotor()"
               [disabled]="!canGoToNextMotor()"
-              class="btn-secondary flex-row-reverse gap-2">
+              class="btn-secondary flex-row-reverse gap-2"
+            >
               Motor siguiente
               <mat-icon>arrow_forward</mat-icon>
             </button>

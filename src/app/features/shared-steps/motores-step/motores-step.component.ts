@@ -8,25 +8,30 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { OnboardingStep } from '../../../core/onboarding/onboarding-step';
 import { OnboardingStateService } from '../../../core/state/onboarding-state.service';
+import { MotoresService } from '../../../core/services/motores.service';
 import { MotorDraft } from '../../../core/models/motor.models';
 
 @Component({
   selector: 'app-motores-step',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatExpansionModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatListModule],
+  imports: [CommonModule, ReactiveFormsModule, MatExpansionModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatListModule, MatProgressSpinnerModule],
   templateUrl: './motores-step.component.html',
   styleUrl: './motores-step.component.scss',
 })
 export class MotoresStepComponent implements OnInit, OnboardingStep {
   private fb = inject(FormBuilder);
   private state = inject(OnboardingStateService);
+  private motoresService = inject(MotoresService);
 
-  @Output() hideNavigationButtons = new EventEmitter<boolean>();
+  @Output() etapaChange = new EventEmitter<'basicos' | 'configuracion'>();
+  @Output() stateChange = new EventEmitter<void>();
 
   error = '';
+  loading = false;
   etapa: 'basicos' | 'configuracion' = 'basicos'; // Nueva propiedad para manejar etapas
   selectedMotorIndex = 0; // Índice del motor seleccionado en la segunda etapa
   motorCompletionStatus: boolean[] = []; // Seguimiento estable del estado de completitud
@@ -53,11 +58,11 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
     // Determinar etapa inicial
     if (this.hayDatosBasicosCompletos(existentes)) {
       this.etapa = 'configuracion';
-      this.hideNavigationButtons.emit(false);
+      this.etapaChange.emit('configuracion');
       this.initConfiguracionForms(existentes);
     } else {
       this.etapa = 'basicos';
-      this.hideNavigationButtons.emit(true);
+      this.etapaChange.emit('basicos');
       this.initBasicosForms(cantidad, existentes);
     }
   }
@@ -84,6 +89,12 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
       const preset = existentes[i];
       this.motoresBasicos.push(this.createBasicosForm(i, preset));
     }
+    
+    // Suscribirse a cambios del formulario para notificar al padre
+    this.formBasicos.valueChanges.subscribe(() => {
+      this.validateDuplicateCodes();
+      this.stateChange.emit();
+    });
   }
 
   private initConfiguracionForms(motores: MotorDraft[]) {
@@ -110,8 +121,14 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
       // Suscribirse a cambios para actualizar estado
       configForm.statusChanges.subscribe(() => {
         this.motorCompletionStatus[i] = configForm.valid;
+        this.stateChange.emit(); // Notificar cambios al padre
       });
     }
+    
+    // También suscribirse a cambios del formulario general de configuración
+    this.formConfiguracion.valueChanges.subscribe(() => {
+      this.stateChange.emit();
+    });
   }
 
   get motoresBasicos(): FormArray {
@@ -175,17 +192,22 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
     
     // Cambiar a etapa de configuración
     this.etapa = 'configuracion';
-    this.hideNavigationButtons.emit(false);
+    this.etapaChange.emit('configuracion');
     this.initConfiguracionForms(motoresConDatosBasicos);
+    
+    // Notificar al componente padre que el estado cambió
+    this.stateChange.emit();
   }
 
   selectMotor(index: number): void {
     this.selectedMotorIndex = index;
-    console.log('Motor seleccionado:', index, 'Código:', this.getMotorCodigoByIndex(index));
   }
 
   canContinue(): boolean {
+    if (this.loading) return false;
+    
     if (this.etapa === 'basicos') {
+      // Verificar que el formulario sea válido (incluyendo no duplicados)
       return this.formBasicos.valid;
     }
     
@@ -223,16 +245,101 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
       throw new Error('INVALID_STEP');
     }
 
+    const plantaId = this.state.getPlantaId();
+    console.log('Planta ID obtenido del estado:', plantaId);
+    
+    if (!plantaId) {
+      this.error = 'No se encontró el ID de la planta';
+      throw new Error('PLANTA_NOT_FOUND');
+    }
+
     // Combinar datos básicos con configuración
     const motoresBasicos = this.motoresBasicos.getRawValue();
     const motoresConfig = this.motoresConfiguracion.getRawValue();
 
-    const motoresCompletos: MotorDraft[] = motoresBasicos.map((basico, index) => ({
-      ...basico,
-      ...motoresConfig[index]
-    }));
+    console.log('Datos básicos raw:', motoresBasicos);
+    console.log('Datos configuración raw:', motoresConfig);
 
-    this.state.setMotoresDraft(motoresCompletos);
+    const motoresCompletos: MotorDraft[] = motoresBasicos.map((basico, index) => {
+      const config = motoresConfig[index];
+      
+      // Limpiar y convertir valores numéricos
+      const cleanMotor: MotorDraft = {
+        codigo: basico.codigo?.trim() || '',
+        modelo: basico.modelo?.trim() || null,
+        ubicacion: basico.ubicacion?.trim() || null,
+        
+        // Campos obligatorios numéricos
+        num_anillos: Number(config.num_anillos) || 0,
+        carbones_por_anillo: Number(config.carbones_por_anillo) || 0,
+        
+        // Campos opcionales numéricos - convertir a número o null
+        alto_carbon_mm: config.alto_carbon_mm ? Number(config.alto_carbon_mm) : null,
+        prealarma_mm: config.prealarma_mm ? Number(config.prealarma_mm) : null,
+        minimo_cambio_mm: config.minimo_cambio_mm ? Number(config.minimo_cambio_mm) : null,
+      };
+      
+      return cleanMotor;
+    });
+
+    this.loading = true;
+    try {
+      // Validar datos requeridos antes de enviar
+      const invalidMotor = motoresCompletos.find(motor => 
+        !motor.codigo?.trim() || 
+        !motor.num_anillos || 
+        motor.num_anillos <= 0 || 
+        !motor.carbones_por_anillo || 
+        motor.carbones_por_anillo <= 0
+      );
+      
+      if (invalidMotor) {
+        this.error = 'Todos los motores deben tener código válido, número de anillos y carbones por anillo';
+        throw new Error('INVALID_DATA');
+      }
+
+      // Validar que no haya códigos duplicados
+      const codigos = motoresCompletos.map(motor => motor.codigo?.trim().toUpperCase()).filter(Boolean);
+      const codigosDuplicados = codigos.filter((codigo, index) => codigos.indexOf(codigo) !== index);
+      
+      if (codigosDuplicados.length > 0) {
+        this.error = `Se encontraron códigos duplicados: ${codigosDuplicados.join(', ')}`;
+        throw new Error('DUPLICATE_CODES');
+      }
+      
+      // Debug: Ver qué datos se están enviando
+      console.log('Datos que se envían al API:');
+      console.log('Plant ID:', plantaId);
+      console.log('Motores completos:', JSON.stringify(motoresCompletos, null, 2));
+      
+      // Guardar motores en la API (crear o actualizar según corresponda)
+      const resultado = await this.motoresService.createOrUpdateMotores(plantaId, motoresCompletos);
+      console.log('Resultado de la operación:', resultado);
+      
+      // Actualizar estado local
+      this.state.setMotoresDraft(motoresCompletos);
+      
+    } catch (err: any) {
+      console.error('Error al guardar motores:', err);
+      console.error('Status:', err.status);
+      console.error('Status text:', err.statusText);
+      console.error('Response del servidor:', err.error);
+      console.error('URL:', err.url);
+      
+      // Manejo específico de errores comunes
+      if (err.status === 400) {
+        this.error = `Error 400 - Bad Request: ${err?.error?.message || err?.error?.error || 'Formato de datos inválido'}`;
+      } else if (err.status === 404) {
+        this.error = `Error 404 - No encontrado: ${err?.error?.message || err?.error?.error || 'Planta no encontrada'}`;
+      } else if (err.status === 409) {
+        this.error = `Error 409 - Conflicto: ${err?.error?.message || err?.error?.error || 'Ya existe un motor con ese código en la planta'}`;
+      } else {
+        this.error = err?.error?.error || err?.error?.message || 'No se pudieron guardar los motores';
+      }
+      throw new Error('MOTORES_FAILED');
+    } finally {
+      this.loading = false;
+    }
   }
 
   getMotorCodigoByIndex(index: number): string {
@@ -249,7 +356,7 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
     if (confirm('¿Estás seguro de que quieres borrar todos los datos de los motores?')) {
       this.state.setMotoresDraft([]);
       this.etapa = 'basicos';
-      this.hideNavigationButtons.emit(true);
+      this.etapaChange.emit('basicos');
       const cantidad = this.state.getCantidadMotores() || 1;
       this.initBasicosForms(cantidad, []);
       this.motorCompletionStatus = [];
@@ -335,5 +442,41 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
 
   canGoToNextMotor(): boolean {
     return this.selectedMotorIndex < this.motoresBasicos.controls.length - 1;
+  }
+
+  private validateDuplicateCodes(): void {
+    const codigos = this.motoresBasicos.controls
+      .map(control => control.get('codigo')?.value?.trim()?.toUpperCase())
+      .filter(Boolean);
+    
+    const duplicates = codigos.filter((codigo, index) => codigos.indexOf(codigo) !== index);
+    
+    // Limpiar errores previos de duplicados
+    this.motoresBasicos.controls.forEach(control => {
+      const codigoControl = control.get('codigo');
+      if (codigoControl?.hasError('duplicate')) {
+        codigoControl.setErrors(null);
+      }
+    });
+    
+    // Marcar controles duplicados
+    if (duplicates.length > 0) {
+      this.motoresBasicos.controls.forEach(control => {
+        const codigo = control.get('codigo')?.value?.trim()?.toUpperCase();
+        if (duplicates.includes(codigo)) {
+          control.get('codigo')?.setErrors({ duplicate: true });
+        }
+      });
+    }
+  }
+
+  // Método para volver a etapa básicos (llamado desde el componente padre)
+  volverABasicos(): void {
+    this.etapa = 'basicos';
+    this.etapaChange.emit('basicos');
+    this.selectedMotorIndex = 0;
+    
+    // IMPORTANTE: Notificar al componente padre que el estado cambió
+    this.stateChange.emit();
   }
 }

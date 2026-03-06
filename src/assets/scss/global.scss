@@ -34,6 +34,10 @@ h1, h2, h3, h4, h5, h6 {
 .btn-secondary {
     @include mat.button-color($app-theme, $color-variant: secondary);
 }
+.btn-accent {
+    // @include mat.button-color($app-theme, $color-variant: accent);
+    @include mat.button-color($app-theme, $color-variant: tertiary);
+}
 
 .btn-icon-right {
     display: inline-flex;

@@ -8,12 +8,12 @@
   <!-- <h2>{{ mode === 'register' ? 'Crear cuenta' : 'Iniciar sesión' }}</h2> -->
   
   <form class="grid gap-8 w-2/3 mx-auto" [formGroup]="form">
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" floatLabel="always">
       <mat-label>Correo de acceso</mat-label>
       <input matInput type="email" formControlName="email">
     </mat-form-field>
   
-    <mat-form-field appearance="outline">
+    <mat-form-field appearance="outline" floatLabel="always">
       <mat-label>Contraseña de acceso</mat-label>
       <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="password">
       <mat-icon matSuffix (click)="togglePasswordVisibility()" style="cursor: pointer;">
@@ -22,7 +22,7 @@
     </mat-form-field>
     
     @if (mode === 'register') {
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" floatLabel="always">
         <mat-label>Confirmar contraseña</mat-label>
         <input matInput [type]="showConfirmPassword ? 'text' : 'password'" formControlName="confirmPassword">
         <mat-icon matSuffix (click)="toggleConfirmPasswordVisibility()" style="cursor: pointer;">

@@ -1,7 +1,7 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subscription, firstValueFrom, timeout } from 'rxjs';
+import { Subscription, firstValueFrom, timeout, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -24,6 +24,8 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
   private fb = inject(FormBuilder);
   private state = inject(OnboardingStateService);
   private auth = inject(AuthService);
+
+  @Output() stateChange = new EventEmitter<void>();
 
   private sub?: Subscription;
 
@@ -48,15 +50,38 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
   }
 
   ngOnInit(): void {
+    console.log(`🔐 AuthStep ngOnInit - isAuthenticated: ${this.auth.isAuthenticated()}`);
+    
     const draft = this.state.getAuthDraft();
+    console.log(`🔐 AuthStep - authDraft:`, draft);
+    
     if (draft) {
       this.mode = draft.mode;
       this.form.patchValue({ email: draft.email }, { emitEvent: false });
     }
 
-    this.sub = this.form.valueChanges.subscribe(v => {
+    console.log(`🔐 AuthStep - form initial state:`, this.form.value);
+    console.log(`🔐 AuthStep - form valid:`, this.form.valid);
+    console.log(`🔐 AuthStep - mode:`, this.mode);
+
+    // Si ya está autenticado, notificar inmediatamente
+    if (this.auth.isAuthenticated()) {
+      console.log(`🔐 AuthStep - usuario ya autenticado, emitiendo stateChange`);
+      setTimeout(() => {
+        this.stateChange.emit();
+      }, 0);
+    }
+
+    this.sub = this.form.valueChanges.pipe(
+      debounceTime(300), // Esperar 300ms antes de emitir
+      distinctUntilChanged() // Solo emitir si el valor realmente cambió
+    ).subscribe(v => {
+      console.log(`🔐 AuthStep - form valueChanges:`, v);
       const email = (v.email ?? '').trim().toLowerCase();
       this.state.setAuthDraft({ email, mode: this.mode });
+      
+      // Notificar al componente padre que el estado cambió
+      this.stateChange.emit();
     });
   }
 
@@ -69,6 +94,11 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
     this.mode = this.mode === 'register' ? 'login' : 'register';
     const email = (this.form.get('email')?.value ?? '').trim().toLowerCase();
     this.state.setAuthDraft({ email, mode: this.mode });
+    
+    // Notificar cambio de estado al componente padre de forma asíncrona
+    Promise.resolve().then(() => {
+      this.stateChange.emit();
+    });
   }
 
   togglePasswordVisibility(): void {
@@ -80,7 +110,46 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
   }
 
   canContinue(): boolean {
-    return this.form.valid && !this.loading;
+    console.log(`🔐 AuthStep canContinue - evaluando...`);
+    
+    // Si ya está autenticado, permitir continuar
+    if (this.auth.isAuthenticated()) {
+      console.log(`🔐 AuthStep - usuario ya autenticado, retornando true`);
+      return true;
+    }
+    
+    if (this.loading) {
+      console.log(`🔐 AuthStep - loading=true, retornando false`);
+      return false;
+    }
+    
+    // Validaciones básicas
+    const email = this.form.get('email');
+    const password = this.form.get('password');
+    
+    console.log(`🔐 AuthStep - email valid: ${email?.valid}, password valid: ${password?.valid}`);
+    console.log(`🔐 AuthStep - email value: "${email?.value}", password length: ${password?.value?.length || 0}`);
+    
+    if (!email?.valid || !password?.valid) {
+      console.log(`🔐 AuthStep - email o password inválidos, retornando false`);
+      return false;
+    }
+    
+    // Para registro, también verificar confirmPassword
+    if (this.mode === 'register') {
+      const confirmPassword = this.form.get('confirmPassword');
+      const hasPasswordMismatch = this.form.hasError('passwordsMismatch');
+      
+      console.log(`🔐 AuthStep (registro) - confirmPassword valid: ${confirmPassword?.valid}, passwordsMismatch: ${hasPasswordMismatch}`);
+      
+      if (!confirmPassword?.valid || hasPasswordMismatch) {
+        console.log(`🔐 AuthStep (registro) - confirmPassword inválido o passwords no coinciden, retornando false`);
+        return false;
+      }
+    }
+    
+    console.log(`🔐 AuthStep - todas las validaciones pasaron, retornando true`);
+    return true;
   }
 
   async commit(): Promise<void> {

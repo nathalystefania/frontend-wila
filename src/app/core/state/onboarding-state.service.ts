@@ -61,8 +61,12 @@ export class OnboardingStateService {
   }
 
   // Planta
-  setPlantaId(id: number) {
-    this.state.plantaId = id;
+  setPlantaId(id: number | null) {
+    if (id === null) {
+      delete this.state.plantaId;
+    } else {
+      this.state.plantaId = id;
+    }
     this.saveToStorage();
   }
   getPlantaId(): number | null {
@@ -77,8 +81,12 @@ export class OnboardingStateService {
     return this.state.cantidadMotores ?? null;
   }
 
-  setPlantaDraft(draft: PlantaDraft) {
-    this.state.plantaDraft = draft;
+  setPlantaDraft(draft: PlantaDraft | null) {
+    if (draft === null) {
+      delete this.state.plantaDraft;
+    } else {
+      this.state.plantaDraft = draft;
+    }
     this.saveToStorage();
   }
   getPlantaDraft(): PlantaDraft | null {

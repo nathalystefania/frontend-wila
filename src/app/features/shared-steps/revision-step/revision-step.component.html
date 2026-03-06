@@ -1,45 +1,62 @@
-<h2>Revisión de la configuración</h2>
-
-<p>Revisa todos los datos ingresados antes de continuar:</p>
-
-<!-- Resumen de autenticación -->
-<div *ngIf="datosAuth" style="margin-bottom: 24px;">
-  <h3>👤 Usuario</h3>
-  <div style="background: #f5f5f5; padding: 16px; border-radius: 4px;">
-    <p><strong>Email:</strong> {{ datosAuth.email }}</p>
-    <p><strong>ID:</strong> {{ datosAuth.userId }}</p>
+<div class="grid gap-8">
+  <div class="flex flex-col items-center justify-center text-center gap-4 mx-auto">
+    <img src="assets/images/isotipo-wila.svg" alt="Logo Wila" class="w-16 mx-auto" />
+    <h1>Revisión de la configuración</h1>
   </div>
-</div>
 
-<!-- Resumen de planta -->
-<div *ngIf="datosPlanta" style="margin-bottom: 24px;">
-  <h3>🏭 Planta</h3>
-  <div style="background: #f5f5f5; padding: 16px; border-radius: 4px;">
-    <p><strong>Nombre:</strong> {{ datosPlanta.nombre }}</p>
-    <p><strong>Ubicación:</strong> {{ datosPlanta.ubicacion || 'No especificada' }}</p>
-    <p><strong>Email notificaciones:</strong> {{ datosPlanta.email_notificaciones || 'No especificado' }}</p>
-    <p><strong>ID de planta:</strong> {{ plantaId }}</p>
-  </div>
-</div>
-
-<!-- Resumen de motores -->
-<div *ngIf="motores && motores.length" style="margin-bottom: 24px;">
-  <h3>⚙️ Motores ({{ motores.length }})</h3>
-  <div style="background: #f5f5f5; padding: 16px; border-radius: 4px;">
-    <div *ngFor="let motor of motores; let i = index" style="margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #ddd;">
-      <h4>{{ motor.codigo }} - {{ motor.modelo }}</h4>
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 14px;">
-        <div><strong>Ubicación:</strong> {{ motor.ubicacion || 'No especificada' }}</div>
-        <div><strong>N° Anillos:</strong> {{ motor.num_anillos }}</div>
-        <div><strong>Carbones/anillo:</strong> {{ motor.carbones_por_anillo }}</div>
-        <div><strong>Alto carbón:</strong> {{ motor.alto_carbon_mm ? motor.alto_carbon_mm + ' mm' : 'No especificado' }}</div>
-        <div><strong>Prealarma:</strong> {{ motor.prealarma_mm ? motor.prealarma_mm + ' mm' : 'No especificado' }}</div>
-        <div><strong>Mínimo cambio:</strong> {{ motor.minimo_cambio_mm ? motor.minimo_cambio_mm + ' mm' : 'No especificado' }}</div>
+  <!-- Resumen de autenticación -->
+  @if (datosAuth && datosPlanta) {
+    <div class="grid grid-cols-2">
+      <div>
+        <div class="avatar">{{ getEmailInitials(datosAuth.email) }}</div>
+        <p>{{ getEmailUsername(datosAuth.email) }}</p>
+        <p>{{ datosAuth.email }}</p>
+      </div>
+      <div>
+        Planta
+        <p>{{ datosPlanta.nombre }}</p>
       </div>
     </div>
-  </div>
-</div>
+  }
 
-<div *ngIf="!canContinue()" style="color: red; margin-top: 16px;">
-  ⚠️ Faltan datos para completar la configuración. Revisa los pasos anteriores.
+  <!-- Resumen de motores -->
+  @if (motores && motores.length) {
+    <h2>Configuración de Motores</h2>
+
+    <mat-accordion multi="true">
+      @for (motor of motores; track $index) {
+        <mat-expansion-panel [expanded]="$index === 0">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <div class="flex align-items-center text-primary-950">
+                {{ motor.codigo }} - {{ motor.modelo }}
+              </div>
+            </mat-panel-title>
+          </mat-expansion-panel-header>
+
+          <div class="flex flex-col gap-4">
+            <div><strong>Ubicación:</strong> {{ motor.ubicacion || 'No especificada' }}</div>
+          <div><strong>N° Anillos:</strong> {{ motor.num_anillos }}</div>
+          <div><strong>Carbones/anillo:</strong> {{ motor.carbones_por_anillo }}</div>
+          <div>
+            <strong>Alto carbón:</strong>
+            {{ motor.alto_carbon_mm ? motor.alto_carbon_mm + ' mm' : 'No especificado' }}
+          </div>
+          <div>
+            <strong>Prealarma:</strong>
+            {{ motor.prealarma_mm ? motor.prealarma_mm + ' mm' : 'No especificado' }}
+          </div>
+          <div>
+            <strong>Mínimo cambio:</strong>
+            {{ motor.minimo_cambio_mm ? motor.minimo_cambio_mm + ' mm' : 'No especificado' }}
+          </div>
+          </div>
+        </mat-expansion-panel>
+      }
+    </mat-accordion>
+  }
+
+  <div *ngIf="!canContinue()" style="color: red; margin-top: 16px">
+    ⚠️ Faltan datos para completar la configuración. Revisa los pasos anteriores.
+  </div>
 </div>

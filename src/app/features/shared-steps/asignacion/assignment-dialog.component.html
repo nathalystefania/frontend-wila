@@ -1,0 +1,21 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content class="dialog-content">
+  <p class="dialog-message">{{ data.message }}</p>
+  
+  <div class="flex">
+    <div class="flex w-3/5">
+        <img src="assets/images/motor-rings-example.png" alt="Imagen de ejemplo de anillos y posición de carbones del motor" srcset="assets/images/motor-rings-example.png" class="h-full w-auto object-contain">
+    </div>
+    <div class="flex w-2/5"></div>
+  </div>
+  
+
+  
+</mat-dialog-content>
+
+<mat-dialog-actions class="dialog-actions">
+  <button mat-button color="primary" (click)="onConfirm()" class="confirm-btn">
+    Entendido, comenzar
+  </button>
+</mat-dialog-actions>

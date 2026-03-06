@@ -1,0 +1,131 @@
+// .dialog-content {
+//   padding: 24px;
+//   min-width: 400px;
+// }
+
+// .dialog-message {
+//   font-size: 16px;
+//   color: #666;
+//   margin-bottom: 20px;
+// }
+
+// .connection-status {
+//   margin-top: 16px;
+// }
+
+// .status-indicator {
+//   display: flex;
+//   align-items: center;
+//   gap: 12px;
+//   margin-bottom: 20px;
+// }
+
+// .spinner {
+//   width: 20px;
+//   height: 20px;
+//   border: 2px solid #f3f3f3;
+//   border-top: 2px solid #1976d2;
+//   border-radius: 50%;
+// }
+
+// .animate-spin {
+//   animation: spin 1s linear infinite;
+// }
+
+// @keyframes spin {
+//   from { transform: rotate(0deg); }
+//   to { transform: rotate(360deg); }
+// }
+
+// .status-text {
+//   font-weight: 500;
+//   color: #1976d2;
+// }
+
+// .sensor-info {
+//   background-color: #f8f9fa;
+//   border-radius: 8px;
+//   padding: 16px;
+//   margin-top: 16px;
+// }
+
+// .info-card {
+//   display: flex;
+//   align-items: flex-start;
+//   gap: 12px;
+//   margin-bottom: 16px;
+// }
+
+// .info-icon {
+//   color: #4caf50;
+//   flex-shrink: 0;
+//   margin-top: 2px;
+// }
+
+// .info-content h4 {
+//   margin: 0 0 4px 0;
+//   font-size: 14px;
+//   font-weight: 600;
+//   color: #333;
+// }
+
+// .info-content p {
+//   margin: 0;
+//   font-size: 13px;
+//   color: #666;
+// }
+
+// .progress-bar {
+//   width: 100%;
+//   height: 4px;
+//   background-color: #e0e0e0;
+//   border-radius: 2px;
+//   overflow: hidden;
+// }
+
+// .progress-fill {
+//   height: 100%;
+//   background: linear-gradient(90deg, #1976d2 0%, #42a5f5 100%);
+//   width: 0%;
+//   border-radius: 2px;
+//   animation: progress 3s ease-in-out infinite;
+// }
+
+// @keyframes progress {
+//   0% { width: 0%; }
+//   50% { width: 75%; }
+//   100% { width: 0%; }
+// }
+
+// .dialog-actions {
+//   padding: 16px 24px;
+//   gap: 8px;
+// }
+
+// .cancel-btn {
+//   color: #666;
+// }
+
+// .confirm-btn {
+//   background-color: #1976d2;
+//   color: white;
+// }
+
+// .confirm-btn:hover {
+//   background-color: #1565c0;
+// }
+
+:host ::ng-deep {
+	.mat-mdc-dialog-content{
+		max-height: inherit;
+	}
+
+	h2 {
+		font-family: "Roboto Slab", serif!important;
+		font-weight: 500!important;
+	}
+	
+	img{
+		max-height: 595px;
+	}
+}
