@@ -23,7 +23,7 @@ interface SensorData {
 
 @Component({
   selector: 'app-asignacion-step',
-  imports: [CommonModule, MatDialogModule, MatButtonModule],
+  imports: [CommonModule, MatDialogModule, MatButtonModule, MatProgressSpinnerModule],
   templateUrl: './asignacion.component.html',
   styleUrl: './asignacion.component.scss',
 })
