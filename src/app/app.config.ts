@@ -5,6 +5,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { authErrorInterceptor } from './core/interceptors/auth-error.interceptor';
+import { timeoutInterceptor } from './core/interceptors/timeout.interceptor';
 import { provideAppIcons } from './core/icons/icons.provider';
 
 export const appConfig: ApplicationConfig = {
@@ -13,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(
       withFetch(),
-      withInterceptors([authInterceptor, authErrorInterceptor])
+      withInterceptors([timeoutInterceptor, authInterceptor, authErrorInterceptor])
     ),
   ]
 };
