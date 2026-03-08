@@ -1,12 +1,13 @@
 import { Component, OnDestroy, OnInit, inject, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subscription, firstValueFrom, timeout, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subscription, firstValueFrom, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { OnboardingStep } from '../../../core/onboarding/onboarding-step';
 import { OnboardingStateService } from '../../../core/state/onboarding-state.service';
@@ -16,7 +17,7 @@ import { AuthCredentials } from '../../../core/models/auth.models';
 @Component({
   selector: 'app-auth-step',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule],
+  imports: [CommonModule, ReactiveFormsModule, MatIconModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatProgressSpinnerModule],
   templateUrl: './auth-step.component.html',
   styleUrl: './auth-step.component.scss',
 })
@@ -29,7 +30,7 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
 
   private sub?: Subscription;
 
-  mode: 'register' | 'login' = 'register';
+  mode: 'register' | 'login' = 'login';
   error = '';
   loading = false;
   showPassword = false;
@@ -50,23 +51,16 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
   }
 
   ngOnInit(): void {
-    console.log(`🔐 AuthStep ngOnInit - isAuthenticated: ${this.auth.isAuthenticated()}`);
     
     const draft = this.state.getAuthDraft();
-    console.log(`🔐 AuthStep - authDraft:`, draft);
     
     if (draft) {
       this.mode = draft.mode;
       this.form.patchValue({ email: draft.email }, { emitEvent: false });
     }
 
-    console.log(`🔐 AuthStep - form initial state:`, this.form.value);
-    console.log(`🔐 AuthStep - form valid:`, this.form.valid);
-    console.log(`🔐 AuthStep - mode:`, this.mode);
-
     // Si ya está autenticado, notificar inmediatamente
     if (this.auth.isAuthenticated()) {
-      console.log(`🔐 AuthStep - usuario ya autenticado, emitiendo stateChange`);
       setTimeout(() => {
         this.stateChange.emit();
       }, 0);
@@ -76,7 +70,6 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
       debounceTime(300), // Esperar 300ms antes de emitir
       distinctUntilChanged() // Solo emitir si el valor realmente cambió
     ).subscribe(v => {
-      console.log(`🔐 AuthStep - form valueChanges:`, v);
       const email = (v.email ?? '').trim().toLowerCase();
       this.state.setAuthDraft({ email, mode: this.mode });
       
@@ -110,16 +103,13 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
   }
 
   canContinue(): boolean {
-    console.log(`🔐 AuthStep canContinue - evaluando...`);
     
     // Si ya está autenticado, permitir continuar
     if (this.auth.isAuthenticated()) {
-      console.log(`🔐 AuthStep - usuario ya autenticado, retornando true`);
       return true;
     }
     
     if (this.loading) {
-      console.log(`🔐 AuthStep - loading=true, retornando false`);
       return false;
     }
     
@@ -127,11 +117,7 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
     const email = this.form.get('email');
     const password = this.form.get('password');
     
-    console.log(`🔐 AuthStep - email valid: ${email?.valid}, password valid: ${password?.valid}`);
-    console.log(`🔐 AuthStep - email value: "${email?.value}", password length: ${password?.value?.length || 0}`);
-    
     if (!email?.valid || !password?.valid) {
-      console.log(`🔐 AuthStep - email o password inválidos, retornando false`);
       return false;
     }
     
@@ -140,15 +126,11 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
       const confirmPassword = this.form.get('confirmPassword');
       const hasPasswordMismatch = this.form.hasError('passwordsMismatch');
       
-      console.log(`🔐 AuthStep (registro) - confirmPassword valid: ${confirmPassword?.valid}, passwordsMismatch: ${hasPasswordMismatch}`);
-      
       if (!confirmPassword?.valid || hasPasswordMismatch) {
-        console.log(`🔐 AuthStep (registro) - confirmPassword inválido o passwords no coinciden, retornando false`);
         return false;
       }
     }
     
-    console.log(`🔐 AuthStep - todas las validaciones pasaron, retornando true`);
     return true;
   }
 
@@ -167,12 +149,12 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
 
     try {
       if (this.mode === 'register') {
-        const res = await firstValueFrom(this.auth.register(creds).pipe(timeout(15000)));
+        const res = await firstValueFrom(this.auth.register(creds));
         this.auth.saveSession(res);
         return;
       }
 
-      const res = await firstValueFrom(this.auth.login(creds).pipe(timeout(15000)));
+      const res = await firstValueFrom(this.auth.login(creds));
       this.auth.saveSession(res);
       return;
 
@@ -184,17 +166,26 @@ export class AuthStepComponent implements OnInit, OnDestroy, OnboardingStep {
 
       const status = err?.status;
 
+      if (status === 404 || status === 401) {
+        this.mode = 'register';
+        this.state.setAuthDraft({ email: creds.email, mode: this.mode });
+        this.error = 'No tienes cuenta registrada. Crea una contraseña para continuar.';
+        this.stateChange.emit();
+        throw new Error('USER_NOT_FOUND');
+      }
+
       if (status === 409) {
         this.mode = 'login';
         this.state.setAuthDraft({ email: creds.email, mode: this.mode });
         this.error = 'Este correo ya existe. Inicia sesión para continuar.';
+        this.stateChange.emit();
         throw new Error('STEP_NEEDS_LOGIN');
       }
 
-      if (status === 401) {
-        this.error = 'Credenciales incorrectas.';
-        throw new Error('UNAUTHORIZED');
-      }
+      // if (status === 401) {
+      //   this.error = 'Credenciales incorrectas.';
+      //   throw new Error('UNAUTHORIZED');
+      // }
 
       this.error = err?.error?.error || err?.error?.message || 'No se pudo autenticar.';
       throw new Error('AUTH_FAILED');

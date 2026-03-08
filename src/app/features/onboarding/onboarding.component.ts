@@ -374,9 +374,13 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
         this.updateStepStates();
       }
     } catch (e: any) {
-      this.nextError = e?.message === 'INVALID_STEP'
-        ? 'Completa los campos requeridos para continuar.'
-        : 'No se pudo guardar este paso. Revisa tu sesión e intenta de nuevo.';
+      const msg = e?.message;
+      const isModeSwitch = msg === 'USER_NOT_FOUND' || msg === 'STEP_NEEDS_LOGIN';
+      if (!isModeSwitch) {
+        this.nextError = msg === 'INVALID_STEP'
+          ? 'Completa los campos requeridos para continuar.'
+          : 'No se pudo guardar este paso. Revisa tu sesión e intenta de nuevo.';
+      }
     } finally {
       this.loadingNext = false;
     }

@@ -6,6 +6,7 @@ import { Subscription, firstValueFrom } from 'rxjs';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { OnboardingStep } from '../../../core/onboarding/onboarding-step';
 import { OnboardingStateService } from '../../../core/state/onboarding-state.service';
@@ -20,7 +21,8 @@ import { PlantaDraft, Planta } from '../../../core/models/planta.models';
     ReactiveFormsModule,
     MatFormFieldModule, 
     MatInputModule,
-    MatIconModule
+    MatIconModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './planta-step.component.html',
   styleUrl: './planta-step.component.scss',

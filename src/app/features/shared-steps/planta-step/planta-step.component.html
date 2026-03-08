@@ -7,25 +7,13 @@
 
   @if (loadingPlantas) {
     <div class="text-center py-8">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mb-4"></div>
+      <mat-spinner class="mx-auto mb-4" diameter="32"></mat-spinner>
       <p>Cargando información de la planta...</p>
       <p class="text-sm text-gray-500 mt-2">Si esto tarda mucho, intenta refrescar la página</p>
     </div>
   } @else {
     <div class="w-2/3 mx-auto">
       
-      @if (isEditMode) {
-        <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div class="flex items-center gap-2 mb-2">
-            <mat-icon class="text-blue-600">info</mat-icon>
-            <span class="font-semibold text-blue-800">Editando planta existente</span>
-          </div>
-          <p class="text-sm text-blue-700">
-            Ya tienes una planta registrada. Puedes modificar sus datos según sea necesario.
-          </p>
-        </div>
-      }
-
       <form class="grid gap-6" [formGroup]="form">
         <mat-form-field appearance="outline" floatLabel="always">
           <mat-label>Nombre de la planta</mat-label>
@@ -45,6 +33,12 @@
           <mat-hint>Número de motores que se configurarán y monitorearán.</mat-hint>
         </mat-form-field>
       </form>
+
+      @if (loading) {
+        <div class="flex justify-center py-4">
+          <mat-spinner diameter="32"></mat-spinner>
+        </div>
+      }
 
       @if (error) { 
         <div class="text-error-20 mt-4 text-center">

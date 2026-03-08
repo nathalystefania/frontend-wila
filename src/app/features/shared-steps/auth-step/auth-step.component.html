@@ -4,9 +4,7 @@
     <h1>Configuración inicial</h1>
     <p>Para comenzar, se deben ingresar algunos datos básicos que permitirán crear el acceso y guardar la configuración del sistema.</p>
   </div>
-  
-  <!-- <h2>{{ mode === 'register' ? 'Crear cuenta' : 'Iniciar sesión' }}</h2> -->
-  
+
   <form class="grid gap-8 w-2/3 mx-auto" [formGroup]="form">
     <mat-form-field appearance="outline" floatLabel="always">
       <mat-label>Correo de acceso</mat-label>
@@ -31,16 +29,17 @@
       </mat-form-field>
     }
   
+    @if (loading) {
+      <div class="flex justify-center py-2">
+        <mat-spinner diameter="32"></mat-spinner>
+      </div>
+    }
+
     @if (error) { 
     <div class="text-error-20">
       {{ error }}
     </div>
     }
-  
-    <div class="inline-block text-center">
-      <a href="#" matButton class="inline-block !underline underline-offset-4" (click)="toggleMode()">
-        {{ mode === 'register' ? 'Ya tengo cuenta' : 'Crear cuenta' }}
-      </a>
-    </div>
+
   </form>
 </div>

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Observable, of, delay, takeUntil, Subject } from 'rxjs';
 import { MatDialog, MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OnboardingStep } from '../../../core/onboarding/onboarding-step';
 
 interface SensorData {
