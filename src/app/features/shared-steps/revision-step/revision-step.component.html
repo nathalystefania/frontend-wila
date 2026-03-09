@@ -84,13 +84,11 @@
           </div>
           <div>
             <p class="text-black font-light">Medida del carbón</p>
-            <p class="mt-1 font-semibold text-lg">{{ motor.alto_carbon_mm ? motor.alto_carbon_mm + ' mm' : 'No
-              especificado' }}</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.alto_carbon_mm ? motor.alto_carbon_mm + ' mm' : 'No especificado' }}</p>
           </div>
           <div>
             <p class="text-black font-light">Duración estimada</p>
-            <p class="mt-1 font-semibold text-lg">{{ motor.minimo_cambio_mm ? motor.minimo_cambio_mm + ' mm' : 'No
-              especificado' }}</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.minimo_cambio_mm ? motor.minimo_cambio_mm + ' mm' : 'No especificado' }}</p>
           </div>
         </div>
         <button mat-stroked-button color="secondary" class="mt-4" (click)="editarMotor.emit($index)">

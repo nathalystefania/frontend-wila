@@ -178,36 +178,28 @@ export class AsignacionStepComponent implements OnInit, OnDestroy, OnboardingSte
     if (!this.selectedCarbon) return;
     this.isLoading = true;
     this.cdr.detectChanges();
+    
     const carbonId = this.selectedCarbon.id;
-    // this.sensoresService.asignarSensor(carbonId).subscribe({
-    //   next: (data) => {
-    //     // Aquí podrías actualizar el estado local para reflejar la asignación, si la API devuelve datos útiles.
-    //     this.isLoading = false;
-    //     this.cdr.detectChanges();
-    //     // Avanzar al paso 5 con los datos del dispositivo asignado
-    //     this.step5Motor = this.step4Motor;
-    //     this.step5Anillo = this.step4Anillo;
-    //     this.step5Carbon = this.step4Carbon;
-    //     this.subStep = 5;
-    //     this.subStepChange.emit(5);
-    //     this.stateChange.emit();
-    //   },
-    //   error: () => {
-    //     this.isLoading = false;
-    //     this.cdr.detectChanges();
-    //   }
-    // });
-    setTimeout(() => {
-      this.isLoading = false;
-      this.cdr.detectChanges();
-      // Avanzar al paso 5 con los datos del dispositivo asignado
-      this.step5Motor = this.step4Motor;
-      this.step5Anillo = this.step4Anillo;
-      this.step5Carbon = this.step4Carbon;
-      this.subStep = 5;
-      this.subStepChange.emit(5);
-      this.stateChange.emit();
-    }, 5000); // Simula tiempo de asignación
+    this.sensoresService.asignarSensor(carbonId, deveui).subscribe({
+      next: (data) => {
+        console.log('Dispositivo asignado exitosamente:', data);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        // Avanzar al paso 5 con los datos del dispositivo asignado
+        this.step5Motor = this.step4Motor;
+        this.step5Anillo = this.step4Anillo;
+        this.step5Carbon = this.step4Carbon;
+        this.subStep = 5;
+        this.subStepChange.emit(5);
+        this.stateChange.emit();
+      },
+      error: (err) => {
+        console.error('Error al asignar dispositivo:', err);
+        this.error = 'Error al asignar el dispositivo. Intenta de nuevo.';
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private setSubStep(step: 1 | 2 | 3 | 4 | 5) {
