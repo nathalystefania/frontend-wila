@@ -129,7 +129,6 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
     
     // Suscribirse a cambios del formulario para notificar al padre
     this.formBasicos.valueChanges.subscribe(() => {
-      this.validateDuplicateCodes();
       this.stateChange.emit();
     });
   }
@@ -244,7 +243,7 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
     if (this.loading) return false;
     
     if (this.etapa === 'basicos') {
-      // Verificar que el formulario sea válido (incluyendo no duplicados)
+      // Verificar que el formulario sea válido
       return this.formBasicos.valid;
     }
     
@@ -334,15 +333,6 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
         this.error = 'Todos los motores deben tener código válido, número de anillos y carbones por anillo';
         throw new Error('INVALID_DATA');
       }
-
-      // Validar que no haya códigos duplicados
-      const codigos = motoresCompletos.map(motor => motor.codigo?.trim().toUpperCase()).filter(Boolean);
-      const codigosDuplicados = codigos.filter((codigo, index) => codigos.indexOf(codigo) !== index);
-      
-      if (codigosDuplicados.length > 0) {
-        this.error = `Se encontraron códigos duplicados: ${codigosDuplicados.join(', ')}`;
-        throw new Error('DUPLICATE_CODES');
-      }
       
       // Debug: Ver qué datos se están enviando
       console.log('Datos que se envían al API:');
@@ -352,7 +342,11 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
       // Guardar motores en la API: usa PUT si hay IDs guardados, POST si es la primera vez.
       // Los IDs devueltos están en el mismo orden que motoresCompletos, sin duplicados ni motores extra.
       const storedMotorIds = this.state.getMotoresIds() ?? [];
+      console.log('IDs de motores guardados en estado:', storedMotorIds);
+      console.log('Cantidad de motores a procesar:', motoresCompletos.length);
+      
       const motorIds = await this.motoresService.createOrUpdateMotores(plantaId, motoresCompletos, storedMotorIds);
+      console.log('IDs de motores devueltos por API:', motorIds);
       this.state.setMotoresIds(motorIds);
 
       // Borrar anillos/carbones existentes de cada motor y recrearlos
@@ -503,32 +497,6 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
 
   canGoToNextMotor(): boolean {
     return this.selectedMotorIndex < this.motoresBasicos.controls.length - 1;
-  }
-
-  private validateDuplicateCodes(): void {
-    const codigos = this.motoresBasicos.controls
-      .map(control => control.get('codigo')?.value?.trim()?.toUpperCase())
-      .filter(Boolean);
-    
-    const duplicates = codigos.filter((codigo, index) => codigos.indexOf(codigo) !== index);
-    
-    // Limpiar errores previos de duplicados
-    this.motoresBasicos.controls.forEach(control => {
-      const codigoControl = control.get('codigo');
-      if (codigoControl?.hasError('duplicate')) {
-        codigoControl.setErrors(null);
-      }
-    });
-    
-    // Marcar controles duplicados
-    if (duplicates.length > 0) {
-      this.motoresBasicos.controls.forEach(control => {
-        const codigo = control.get('codigo')?.value?.trim()?.toUpperCase();
-        if (duplicates.includes(codigo)) {
-          control.get('codigo')?.setErrors({ duplicate: true });
-        }
-      });
-    }
   }
 
   // Método para volver a etapa básicos (llamado desde el componente padre)

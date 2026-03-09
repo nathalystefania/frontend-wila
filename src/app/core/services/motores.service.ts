@@ -5,8 +5,9 @@ import { MotorDraft } from '../models/motor.models';
 import { firstValueFrom } from 'rxjs';
 
 export interface CreateMotorResponse {
-  success: boolean;
-  motor_id: number;
+  success?: boolean;
+  motor_id?: number;
+  id?: number; // Respuesta real del servidor
 }
 
 export interface Anillo {
@@ -153,6 +154,11 @@ export class MotoresService {
         return this.http.get<Motor[]>(this.buildUrl(`/api/plantas/${plantaId}/motores`));
     }
 
+    // Obtener un motor específico por ID
+    getMotorById(motorId: number) {
+        return this.http.get<Motor>(this.buildUrl(`/api/motores/${motorId}`));
+    }
+
     // Actualizar un motor individual
     updateMotor(motorId: number, motor: MotorDraft) {
         return this.http.put<Motor>(this.buildUrl(`/api/motores/${motorId}`), motor);
@@ -195,47 +201,31 @@ export class MotoresService {
         }
     }
 
-    // Crear o actualizar motores.
-    // Si se pasan IDs existentes (almacenados en estado), usa PUT directamente.
-    // Si no hay IDs, intenta GET para encontrar motores activos y usa PUT/POST según corresponda.
-    // Nunca borra motores (el API hace soft-delete y el constraint de código se mantiene).
-    // Devuelve los IDs de los motores en el MISMO orden que el array de entrada.
+    // Crear motores nuevos.
+    // Siempre crea motores nuevos sin verificar existencia (camino feliz)
     async createOrUpdateMotores(plantaId: number, motores: MotorDraft[], existingIds: number[] = []): Promise<number[]> {
         const motorIds: number[] = [];
 
-        if (existingIds.length > 0) {
-            // Tenemos IDs guardados: usar PUT para cada motor existente
-            for (let i = 0; i < motores.length; i++) {
-                if (existingIds[i]) {
-                    const motor = await firstValueFrom(this.updateMotor(existingIds[i], motores[i]));
-                    motorIds.push(motor.id);
-                } else {
-                    // Motor nuevo (la cantidad aumentó)
-                    const result = await firstValueFrom(this.createMotor(plantaId, motores[i]));
-                    motorIds.push(result.motor_id);
-                }
-            }
-            return motorIds;
-        }
-
-        // Sin IDs guardados: consultar la API por motores activos
-        let motoresExistentes: Motor[] = [];
-        try {
-            motoresExistentes = await firstValueFrom(this.getMotoresByPlanta(plantaId));
-        } catch (err: any) {
-            if (err?.status !== 404) throw err;
-        }
-
+        // Procesar cada motor
         for (let i = 0; i < motores.length; i++) {
-            const existente = motoresExistentes[i];
-            if (existente?.id) {
-                const motor = await firstValueFrom(this.updateMotor(existente.id, motores[i]));
-                motorIds.push(motor.id);
-            } else {
-                const result = await firstValueFrom(this.createMotor(plantaId, motores[i]));
-                motorIds.push(result.motor_id);
+            const motorDraft = motores[i];
+            
+            console.log(`Creando nuevo motor ${i}:`, motorDraft);
+            const result = await firstValueFrom(this.createMotor(plantaId, motorDraft));
+            console.log(`Respuesta del servidor para motor ${i}:`, result);
+            
+            // El servidor puede devolver {id: number} o {motor_id: number, success: boolean}
+            const motorId = result.motor_id || result.id;
+            
+            if (!motorId) {
+                console.error(`El servidor no devolvió un ID válido para motor ${i}:`, result);
+                throw new Error(`Error al crear motor ${i}: sin ID válido`);
             }
+            
+            motorIds.push(motorId);
         }
+        
+        console.log('IDs de motores finales:', motorIds);
         return motorIds;
     }
 }
