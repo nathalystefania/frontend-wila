@@ -12,14 +12,15 @@ export interface CreateMotorResponse {
 export interface Anillo {
   id: number;
   motor_id: number;
-  numero: number;
+  numero_anillo: number;
   carbones: Carbon[];
 }
 
 export interface Carbon {
   id: number;
   anillo_id: number;
-  posicion: number;
+  numero_carbon: number;
+  deveui_actual?: string | null;
 }
 
 export interface CreateCarbonBody {
@@ -198,20 +199,23 @@ export class MotoresService {
     // Si se pasan IDs existentes (almacenados en estado), usa PUT directamente.
     // Si no hay IDs, intenta GET para encontrar motores activos y usa PUT/POST según corresponda.
     // Nunca borra motores (el API hace soft-delete y el constraint de código se mantiene).
-    async createOrUpdateMotores(plantaId: number, motores: MotorDraft[], existingIds: number[] = []) {
-        const results = [];
+    // Devuelve los IDs de los motores en el MISMO orden que el array de entrada.
+    async createOrUpdateMotores(plantaId: number, motores: MotorDraft[], existingIds: number[] = []): Promise<number[]> {
+        const motorIds: number[] = [];
 
         if (existingIds.length > 0) {
             // Tenemos IDs guardados: usar PUT para cada motor existente
             for (let i = 0; i < motores.length; i++) {
                 if (existingIds[i]) {
-                    results.push(await firstValueFrom(this.updateMotor(existingIds[i], motores[i])));
+                    const motor = await firstValueFrom(this.updateMotor(existingIds[i], motores[i]));
+                    motorIds.push(motor.id);
                 } else {
                     // Motor nuevo (la cantidad aumentó)
-                    results.push(await firstValueFrom(this.createMotor(plantaId, motores[i])));
+                    const result = await firstValueFrom(this.createMotor(plantaId, motores[i]));
+                    motorIds.push(result.motor_id);
                 }
             }
-            return results;
+            return motorIds;
         }
 
         // Sin IDs guardados: consultar la API por motores activos
@@ -225,11 +229,13 @@ export class MotoresService {
         for (let i = 0; i < motores.length; i++) {
             const existente = motoresExistentes[i];
             if (existente?.id) {
-                results.push(await firstValueFrom(this.updateMotor(existente.id, motores[i])));
+                const motor = await firstValueFrom(this.updateMotor(existente.id, motores[i]));
+                motorIds.push(motor.id);
             } else {
-                results.push(await firstValueFrom(this.createMotor(plantaId, motores[i])));
+                const result = await firstValueFrom(this.createMotor(plantaId, motores[i]));
+                motorIds.push(result.motor_id);
             }
         }
-        return results;
+        return motorIds;
     }
 }

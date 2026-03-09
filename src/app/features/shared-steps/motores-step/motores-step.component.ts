@@ -349,13 +349,10 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
       console.log('Plant ID:', plantaId);
       console.log('Motores completos:', JSON.stringify(motoresCompletos, null, 2));
       
-      // Guardar motores en la API: usa PUT si hay IDs guardados, POST si es la primera vez
+      // Guardar motores en la API: usa PUT si hay IDs guardados, POST si es la primera vez.
+      // Los IDs devueltos están en el mismo orden que motoresCompletos, sin duplicados ni motores extra.
       const storedMotorIds = this.state.getMotoresIds() ?? [];
-      await this.motoresService.createOrUpdateMotores(plantaId, motoresCompletos, storedMotorIds);
-
-      // Obtener los motores desde la API para tener los IDs reales garantizados
-      const motoresGuardados = await firstValueFrom(this.motoresService.getMotoresByPlanta(plantaId));
-      const motorIds = motoresGuardados.map(m => m.id);
+      const motorIds = await this.motoresService.createOrUpdateMotores(plantaId, motoresCompletos, storedMotorIds);
       this.state.setMotoresIds(motorIds);
 
       // Borrar anillos/carbones existentes de cada motor y recrearlos

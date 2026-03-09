@@ -4,13 +4,14 @@ import { MatStepperModule, MatStepper } from '@angular/material/stepper';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { StepperSelectionEvent } from '@angular/cdk/stepper';
-import { OnboardingStep } from '../../core/onboarding/onboarding-step';
 
+import { OnboardingStep } from '../../core/onboarding/onboarding-step';
 import { AuthStepComponent } from '../shared-steps/auth-step/auth-step.component';
 import { PlantaStepComponent } from '../shared-steps/planta-step/planta-step.component';
 import { MotoresStepComponent } from '../shared-steps/motores-step/motores-step.component';
 import { RevisionStepComponent } from '../shared-steps/revision-step/revision-step.component';
-import { AsignacionStepComponent } from '../shared-steps/asignacion/asignacion.component';
+import { AsignacionStepComponent } from '../shared-steps/asignacion-step/asignacion-step.component';
+import { ConfigurationCompleteComponent } from '../shared-steps/configuration-complete-step/configuration-complete.component';
 import { AuthService } from '../../core/services/auth.service';
 import { OnboardingStateService } from '../../core/state/onboarding-state.service';
 
@@ -23,6 +24,7 @@ import { OnboardingStateService } from '../../core/state/onboarding-state.servic
     MotoresStepComponent,
     RevisionStepComponent,
     AsignacionStepComponent,
+    ConfigurationCompleteComponent,
     MatStepperModule,
     MatIconModule,
     MatButtonModule
@@ -38,7 +40,8 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
   loadingNext = false;
   nextError = '';
   showExplanation = false;
-  motorEtapa: 'basicos' | 'configuracion' = 'basicos'; // Nueva propiedad para trackear etapa de motores
+  motorEtapa: 'basicos' | 'configuracion' = 'basicos';
+  asignacionSubStep = 1; // Nueva propiedad para trackear etapa de motores
 
   // Propiedades cacheadas para evitar ExpressionChangedAfterItHasBeenCheckedError
   isAuthStepCompleted = false;
@@ -58,6 +61,7 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(RevisionStepComponent) revisionStep?: RevisionStepComponent;
   @ViewChild(AsignacionStepComponent) asignacionStep?: AsignacionStepComponent;
   @ViewChild(MatStepper) stepper?: MatStepper;
+
 
   ngOnInit() {
     // Inicializar estados de pasos de forma SÍNCRONA antes de renderizar el stepper
@@ -298,9 +302,8 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
   // Actualiza currentStep, sincroniza estados de completitud y fuerza el stepper
   private setCurrentStep(step: number) {
     this.currentStep = step;
-    // Sincronizar estados ANTES de detectChanges para que el stepper linear
-    // encuentre los [completed] correctos al evaluar la navegación
     this.syncStepStates();
+    this.cdr.markForCheck();
     this.cdr.detectChanges();
     // Forzar selectedIndex explícitamente (el binding puede ser rechazado por linear)
     if (this.stepper && this.stepper.selectedIndex !== step) {
@@ -403,6 +406,7 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     } finally {
       this.loadingNext = false;
+      this.cdr.detectChanges();
     }
   }
 

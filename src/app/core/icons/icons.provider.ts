@@ -13,13 +13,15 @@ export function provideAppIcons() {
                 const icons = [
                     'logo-wila',
                     'icon-check',
+                    'icon-motor',
+                    'icon-carbon',
+                    'icon-not-carbon',        
                 ];
 
                 icons.forEach(name => {
                     registry.addSvgIcon(
                         name,
                         sanitizer.bypassSecurityTrustResourceUrl(`assets/images/${name}.svg`),
-                        sanitizer.bypassSecurityTrustResourceUrl(`assets/images/${name}.svg`)
                     );
                 });
             },

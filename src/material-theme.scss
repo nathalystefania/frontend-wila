@@ -6,7 +6,7 @@ $app-theme: mat.define-theme(
     color: (
       theme-type: light,
       primary: mat.$azure-palette,
-      tertiary: mat.$magenta-palette,
+      tertiary: mat.$orange-palette,
       use-system-variables: true,
     ),
     typography: (
@@ -16,100 +16,8 @@ $app-theme: mat.define-theme(
   )
 );
 
+
 :root {
-  --color-primary: rgb(14 25 60);
-  /* #0e193c */
-  --color-primary-50: rgb(235 247 255);
-  /* #ebf7ff */
-  --color-primary-100: rgb(219 239 255);
-  /* #dbefff */
-  --color-primary-200: rgb(190 225 255);
-  /* #bee1ff */
-  --color-primary-300: rgb(151 202 255);
-  /* #97caff */
-  --color-primary-400: rgb(110 168 255);
-  /* #6ea8ff */
-  --color-primary-500: rgb(76 134 255);
-  /* #4c86ff */
-  --color-primary-600: rgb(43 96 255);
-  /* #2b60ff */
-  --color-primary-700: rgb(32 77 225);
-  /* #204de1 */
-  --color-primary-800: rgb(29 67 181);
-  /* #1d43b5 */
-  --color-primary-900: rgb(33 62 142);
-  /* #213e8e */
-  --color-primary-950: rgb(13 25 60);
-  /* #0d193c */
-
-  --color-secondary: rgb(255 103 31);
-  /* #ff671f */
-  --color-secondary-50: rgb(255 245 237);
-  /* #fff5ed */
-  --color-secondary-100: rgb(255 233 212);
-  /* #ffe9d4 */
-  --color-secondary-200: rgb(255 207 168);
-  /* #ffcfa8 */
-  --color-secondary-300: rgb(255 173 112);
-  /* #ffad70 */
-  --color-secondary-400: rgb(255 127 55);
-  /* #ff7f37 */
-  --color-secondary-500: rgb(255 103 31);
-  /* #ff671f */
-  --color-secondary-600: rgb(240 65 6);
-  /* #f04106 */
-  --color-secondary-700: rgb(199 46 7);
-  /* #c72e07 */
-  --color-secondary-800: rgb(158 37 14);
-  /* #9e250e */
-  --color-secondary-900: rgb(127 34 15);
-  /* #7f220f */
-  --color-secondary-950: rgb(69 13 5);
-  /* #450d05 */
-
-  --color-accent: rgb(166 184 193);
-  /* #a6b8c1 */
-
-  --color-hover-accent: rgb(143 163 173);
-  /* #8fa3ad */
-  --color-hover-primary: rgb(22 42 99);
-  /* #162a63 */
-  --color-hover-secondary: rgb(229 86 18);
-  /* #e55612 */
-
-  --color-success-10: rgb(230 243 237);
-  /* #e6f3ed */
-  --color-success-20: rgb(46 139 87);
-  /* #2e8b57 */
-  --color-success-30: rgb(36 114 74);
-  /* #24724a */
-
-  --color-warning-10: rgb(255 244 214);
-  /* #fff4d6 */
-  --color-warning-20: rgb(242 183 5);
-  /* #f2b705 */
-  --color-warning-30: rgb(217 163 0);
-  /* #d9a300 */
-
-  --color-error-10: rgb(249 230 229);
-  /* #f9e6e5 */
-  --color-error-20: rgb(200 62 58);
-  /* #c83e3a */
-  --color-error-30: rgb(168 50 47);
-  /* #a8322f */
-
-  --color-disabled-background: rgb(245 247 250);
-  /* #f5f7fa */
-  --color-disabled-base: rgb(211 220 227);
-  /* #d3dce3 */
-  --color-disabled-textos: rgb(154 168 179);
-  /* #9aa8b3 */
-
-  --color-black: rgb(23 23 23);
-  /* #171717 */
-  --color-white: rgb(255 255 255);
-  /* #ffffff */
-
   --mat-secondary: var(--color-secondary-500);
   --mat-tertiary: var(--color-accent);
   --mat-on-primary: var(--color-white);
