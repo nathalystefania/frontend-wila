@@ -12,11 +12,13 @@ export function provideAppIcons() {
 
                 const icons = [
                     'logo-wila',
+                    'icon-check',
                 ];
 
                 icons.forEach(name => {
                     registry.addSvgIcon(
                         name,
+                        sanitizer.bypassSecurityTrustResourceUrl(`assets/images/${name}.svg`),
                         sanitizer.bypassSecurityTrustResourceUrl(`assets/images/${name}.svg`)
                     );
                 });

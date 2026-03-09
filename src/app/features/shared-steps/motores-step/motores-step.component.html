@@ -29,8 +29,15 @@
     </div>
   }
 
+  @if (loadingMotores) {
+    <div class="text-center py-8">
+      <mat-spinner class="mx-auto mb-4" diameter="32"></mat-spinner>
+      <p>Cargando configuración de motores...</p>
+    </div>
+  }
+
   <!-- ETAPA 1: Datos básicos -->
-  @if (etapa === 'basicos') {
+  @if (etapa === 'basicos' && !loadingMotores) {
     <div class="w-3/4 mx-auto">
       <form [formGroup]="formBasicos">
         <mat-accordion multi="true">
@@ -81,7 +88,7 @@
   }
 
   <!-- ETAPA 2: Configuración técnica -->
-  @if (etapa === 'configuracion') {
+  @if (etapa === 'configuracion' && !loadingMotores && !loading) {
     <div class="flex gap-2">
       <!-- Lista de motores -->
       <div>

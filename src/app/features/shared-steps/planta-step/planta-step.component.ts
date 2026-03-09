@@ -51,15 +51,8 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
   });
 
   ngOnInit(): void {
-    // Verificar si ya estamos cargando para evitar llamadas múltiples
-    if (this.loadingPlantas) {
-      return;
-    }
-    
-    // Cargar planta existente del usuario (solo puede tener una)
     this.loadUserPlanta();
-    
-    // Suscribirse a cambios en el formulario
+
     this.sub = this.form.valueChanges.subscribe(v => {
       const nombre = (v.nombre ?? '').trim();
       const ubicacion = (v.ubicacion ?? '').trim() || null;
@@ -79,42 +72,29 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
   private async loadUserPlanta(): Promise<void> {
     this.loadingPlantas = true;
     this.error = '';
-    
+
     try {
-      // Agregar timeout a la llamada
-      const timeout = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Timeout')), 10000)
-      );
-      
-      const plantasPromise = firstValueFrom(this.plantasService.getUserPlantas());
-      const plantas = await Promise.race([plantasPromise, timeout]) as Planta[];
-      
+      const plantas = await firstValueFrom(this.plantasService.getUserPlantas());
+
       if (plantas.length > 0) {
-        // Usuario ya tiene una planta - modo edición
-        this.plantaExistente = plantas[0]; // Solo tomamos la primera (debería ser única)
+        this.plantaExistente = plantas[0];
         this.isEditMode = true;
-        
-        // Precargar datos en el formulario
+
         this.form.patchValue({
           nombre: this.plantaExistente.nombre,
           ubicacion: this.plantaExistente.ubicacion || '',
         }, { emitEvent: false });
-        
-        // Guardar ID en el estado
+
         this.state.setPlantaId(this.plantaExistente.id);
-        
-        // Cargar cantidad de motores desde el estado si existe
+
         const cantidadGuardada = this.state.getCantidadMotores();
         if (cantidadGuardada) {
           this.form.patchValue({ cantidad_motores: cantidadGuardada }, { emitEvent: false });
         }
-        
       } else {
-        // Usuario no tiene planta - modo creación
         this.plantaExistente = null;
         this.isEditMode = false;
-        
-        // Cargar datos del borrador si existen
+
         const draft = this.state.getPlantaDraft();
         const cant = this.state.getCantidadMotores();
 
@@ -124,64 +104,39 @@ export class PlantaStepComponent implements OnInit, OnDestroy, OnboardingStep {
             ubicacion: draft.ubicacion ?? '',
           }, { emitEvent: false });
         }
-
         if (cant) {
           this.form.patchValue({ cantidad_motores: cant }, { emitEvent: false });
         }
       }
-      
-    } catch (err: any) {  
-      if (err.message === 'Timeout') {
-        this.error = 'La carga de plantas está tardando demasiado. Intenta refrescar la página.';
+    } catch (err: any) {
+      if (err?.status === 404) {
+        // Sin plantas aún — modo creación normal
+        this.plantaExistente = null;
+        this.isEditMode = false;
       } else {
         this.error = 'No se pudo cargar la información de la planta';
       }
-      
-      // En caso de error, asumir modo creación
-      this.isEditMode = false;
-      this.plantaExistente = null;
-      
-      // Cargar datos del borrador como fallback
+
       const draft = this.state.getPlantaDraft();
       const cant = this.state.getCantidadMotores();
-
       if (draft) {
         this.form.patchValue({
           nombre: draft.nombre ?? '',
           ubicacion: draft.ubicacion ?? '',
         }, { emitEvent: false });
       }
-
       if (cant) {
         this.form.patchValue({ cantidad_motores: cant }, { emitEvent: false });
       }
-      
     } finally {
       this.loadingPlantas = false;
-      
-      // Forzar detección de cambios
-      setTimeout(() => {
-        // console.log('🏭 PlantaStep - Estado final: loadingPlantas:', this.loadingPlantas, 'isEditMode:', this.isEditMode);
-      }, 100);
+      // Notificar al padre (OnPush) para que ejecute detectChanges y el spinner desaparezca
+      this.stateChange.emit();
     }
   }
 
   ngOnDestroy(): void {
     this.sub?.unsubscribe();
-    
-    // Limpiar estado de carga si el componente se destruye mientras está cargando
-    if (this.loadingPlantas) {
-      this.loadingPlantas = false;
-    }
-  }
-
-  // Método de emergencia para resetear el estado de carga
-  resetLoadingState(): void {
-    this.loadingPlantas = false;
-    this.error = '';
-    
-    // Intentar cargar nuevamente
-    this.loadUserPlanta();
   }
 
   canContinue(): boolean {

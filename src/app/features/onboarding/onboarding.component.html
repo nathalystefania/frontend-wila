@@ -90,7 +90,7 @@
       }
 
       @if (currentStep === 3) {
-        <app-revision-step class="w-full" (stateChange)="onStepStateChange()"></app-revision-step>
+        <app-revision-step class="w-full" (stateChange)="onStepStateChange()" (editarMotor)="onEditarMotor($event)"></app-revision-step>
       }
 
       @if (currentStep === 4) {

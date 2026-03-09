@@ -60,21 +60,31 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild(MatStepper) stepper?: MatStepper;
 
   ngOnInit() {
+    // Inicializar estados de pasos de forma SÍNCRONA antes de renderizar el stepper
+    // Esto evita que el stepper linear rechace selectedIndex > 0 por [completed]=false
+    this.isAuthStepCompleted = this.authService.isAuthenticated();
+    this.isPlantaStepCompleted = !!this.onboardingState.getPlantaId();
+    const motores = this.onboardingState.getMotoresDraft();
+    this.isMotoresStepCompleted = !!(motores && motores.length > 0 &&
+      motores.every(m => m.codigo && m.modelo !== undefined && m.num_anillos && m.carbones_por_anillo));
+    this.isRevisionStepCompleted = this.isAuthStepCompleted && this.isPlantaStepCompleted && this.isMotoresStepCompleted;
+
     const determinedStep = this.determineCurrentStep();
     this.setCurrentStep(determinedStep);
     this.updateStepStates();
   }
 
   ngAfterViewInit() {
-    // Actualizar estados después de que los ViewChild estén disponibles
+    // Forzar el índice del stepper una vez que el ViewChild está disponible
+    // (el binding [selectedIndex] no es suficiente con [linear]="true" en OnPush)
     Promise.resolve().then(() => {
+      if (this.stepper) {
+        this.stepper.selectedIndex = this.currentStep;
+      }
       this.updateStepStates();
-      
-      // Forzar evaluación inicial del estado del botón con múltiples intentos
       this.forceButtonStateUpdate();
     });
-    
-    // También verificar después de un ciclo de detección de cambios
+
     setTimeout(() => {
       if (this.areViewChildrenReady()) {
         this.updateCanContinueState();
@@ -147,23 +157,19 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
     // No hay interval que limpiar ahora
   }
 
+  private syncStepStates(): void {
+    this.isAuthStepCompleted = this.authService.isAuthenticated();
+    this.isPlantaStepCompleted = !!this.onboardingState.getPlantaId();
+    const motores = this.onboardingState.getMotoresDraft();
+    this.isMotoresStepCompleted = !!(motores && motores.length > 0 &&
+      motores.every(m => m.codigo && m.modelo !== undefined && m.num_anillos && m.carbones_por_anillo));
+    this.isRevisionStepCompleted = this.isAuthStepCompleted && this.isPlantaStepCompleted && this.isMotoresStepCompleted;
+  }
+
   private updateStepStates() {
-    // Usar Promise.resolve para mover a la siguiente iteración del event loop
     Promise.resolve().then(() => {
-      // Actualizar estados de los pasos
-      this.isAuthStepCompleted = this.authService.isAuthenticated();
-      this.isPlantaStepCompleted = !!this.onboardingState.getPlantaId();
-      
-      const motores = this.onboardingState.getMotoresDraft();
-      this.isMotoresStepCompleted = motores && motores.length > 0 && 
-        motores.every(m => m.codigo && m.modelo !== undefined && m.num_anillos && m.carbones_por_anillo);
-      
-      this.isRevisionStepCompleted = this.isAuthStepCompleted && this.isPlantaStepCompleted && this.isMotoresStepCompleted;
-      
-      // Actualizar canCurrentStepContinue
+      this.syncStepStates();
       this.updateCanContinueState();
-      
-      // Marcar para verificación de cambios
       this.cdr.detectChanges();
     });
   }
@@ -247,12 +253,24 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
   // Método para manejar cambio de etapa en motores
   onMotorEtapaChange(etapa: 'basicos' | 'configuracion') {
     this.motorEtapa = etapa;
-    
-    // Forzar actualización del estado del botón cuando cambia la etapa
     setTimeout(() => {
       this.updateCanContinueState();
       this.cdr.detectChanges();
     }, 0);
+  }
+
+  // Navegar al paso de motores y abrir la configuración del motor indicado
+  onEditarMotor(motorIndex: number) {
+    this.motorEtapa = 'configuracion';
+    this.setCurrentStep(2);
+    this.updateStepStates();
+    // Esperar a que motores-step esté disponible en el DOM tras el cambio de paso
+    setTimeout(() => {
+      if (this.motoresStep) {
+        this.motoresStep.irAConfiguracionMotor(motorIndex);
+      }
+      this.cdr.detectChanges();
+    }, 50);
   }
 
   // Método público para que los componentes puedan notificar cambios
@@ -277,16 +295,18 @@ export class OnboardingComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // Método para cambiar currentStep con logging y forzar actualización del template
+  // Actualiza currentStep, sincroniza estados de completitud y fuerza el stepper
   private setCurrentStep(step: number) {
     this.currentStep = step;
-    
-    // Forzar múltiples ciclos de detección de cambios
+    // Sincronizar estados ANTES de detectChanges para que el stepper linear
+    // encuentre los [completed] correctos al evaluar la navegación
+    this.syncStepStates();
     this.cdr.detectChanges();
-    
-    setTimeout(() => {
-      this.cdr.detectChanges();
-    }, 0);
+    // Forzar selectedIndex explícitamente (el binding puede ser rechazado por linear)
+    if (this.stepper && this.stepper.selectedIndex !== step) {
+      this.stepper.selectedIndex = step;
+    }
+    setTimeout(() => this.cdr.detectChanges(), 0);
   }
 
   onStepChange(event: StepperSelectionEvent) {

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButton } from '@angular/material/button';
 
 import { OnboardingStep } from '../../../core/onboarding/onboarding-step';
 import { OnboardingStateService } from '../../../core/state/onboarding-state.service';
@@ -14,7 +15,8 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [
     CommonModule,
     MatExpansionModule,
-    MatIconModule
+    MatIconModule,
+    MatButton
   ],
   templateUrl: './revision-step.component.html',
   styleUrl: './revision-step.component.scss',
@@ -24,6 +26,7 @@ export class RevisionStepComponent implements OnboardingStep {
   private authService = inject(AuthService);
 
   @Output() stateChange = new EventEmitter<void>();
+  @Output() editarMotor = new EventEmitter<number>();
 
   get datosAuth() {
     return this.authService.getUser();

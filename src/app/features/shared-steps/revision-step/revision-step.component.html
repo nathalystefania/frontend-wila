@@ -6,57 +6,104 @@
 
   <!-- Resumen de autenticación -->
   @if (datosAuth && datosPlanta) {
-    <div class="grid grid-cols-2">
-      <div>
-        <div class="avatar">{{ getEmailInitials(datosAuth.email) }}</div>
-        <p>{{ getEmailUsername(datosAuth.email) }}</p>
-        <p>{{ datosAuth.email }}</p>
+  <div class="w-full rounded border border-disabled-base bg-white px-4 py-3">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div class="flex items-center gap-4">
+        <div
+          class="flex h-12 w-12 items-center justify-center rounded-full bg-secondary-500 text-lg font-semibold text-white">
+          {{ getEmailInitials(datosAuth.email) }}
+        </div>
+
+        <div>
+          <p class="text-xl/6 font-semibold">
+            {{ getEmailUsername(datosAuth.email) }}
+          </p>
+          <p class="text-base/6 font-normal">
+            {{ datosAuth.email }}
+          </p>
+        </div>
       </div>
-      <div>
-        Planta
-        <p>{{ datosPlanta.nombre }}</p>
+
+      <div class="text-left md:min-w-[280px]">
+        <p class="text-base/6 font-normal">
+          Planta
+        </p>
+        <p class="text-xl/6 font-semibold">
+          {{ datosPlanta.nombre }}
+        </p>
       </div>
     </div>
+  </div>
   }
 
   <!-- Resumen de motores -->
   @if (motores && motores.length) {
-    <h2>Configuración de Motores</h2>
-
+  <div class="grid gap-4">
+    <h2 class="text-xl font-bold text-primary-950">Configuración de Motores</h2>
     <mat-accordion multi="true">
       @for (motor of motores; track $index) {
-        <mat-expansion-panel [expanded]="$index === 0">
-          <mat-expansion-panel-header>
-            <mat-panel-title>
-              <div class="flex align-items-center text-primary-950">
-                {{ motor.codigo }} - {{ motor.modelo }}
+      <mat-expansion-panel [expanded]="$index === 0">
+        <mat-expansion-panel-header>
+          <mat-panel-title>
+            <div class="flex items-center gap-2">
+              <div>
+                <mat-icon svgIcon="icon-check" class="icon-lg"></mat-icon>
               </div>
-            </mat-panel-title>
-          </mat-expansion-panel-header>
-
-          <div class="flex flex-col gap-4">
-            <div><strong>Ubicación:</strong> {{ motor.ubicacion || 'No especificada' }}</div>
-          <div><strong>N° Anillos:</strong> {{ motor.num_anillos }}</div>
-          <div><strong>Carbones/anillo:</strong> {{ motor.carbones_por_anillo }}</div>
+              <div>
+                <p class="text-primary-950 font-semibold text-lg/5">{{ motor.codigo }}</p>
+                <p class="text-black font-normal text-sm">Motor {{$index + 1}} &#8226; {{ motor.num_anillos }} &#8226; {{
+                  motor.carbones_por_anillo }}</p>
+              </div>
+            </div>
+          </mat-panel-title>
+        </mat-expansion-panel-header>
+        <div class="grid grid-cols-3 gap-x-12 gap-y-6 pt-4 border-t border-gray-200">
           <div>
-            <strong>Alto carbón:</strong>
-            {{ motor.alto_carbon_mm ? motor.alto_carbon_mm + ' mm' : 'No especificado' }}
-          </div>
-          <div>
-            <strong>Prealarma:</strong>
-            {{ motor.prealarma_mm ? motor.prealarma_mm + ' mm' : 'No especificado' }}
+            <p class="text-black font-light">Código / ID</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.codigo }}</p>
           </div>
           <div>
-            <strong>Mínimo cambio:</strong>
-            {{ motor.minimo_cambio_mm ? motor.minimo_cambio_mm + ' mm' : 'No especificado' }}
+            <p class="text-black font-light">Modelo</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.modelo }}</p>
           </div>
+          <div>
+            <p class="text-black font-light">Ubicación</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.ubicacion || 'No especificada' }}</p>
           </div>
-        </mat-expansion-panel>
+          <div>
+            <p class="text-black font-light">Cantidad de anillos</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.num_anillos }}</p>
+          </div>
+          <div>
+            <p class="text-black font-light">Carbones por anillo</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.carbones_por_anillo }}</p>
+          </div>
+          <div>
+            <p class="text-black font-light">Umbral de desgaste</p>
+            <p class="mt-1 font-semibold text-lg">99</p>
+          </div>
+          <div>
+            <p class="text-black font-light">Medida del carbón</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.alto_carbon_mm ? motor.alto_carbon_mm + ' mm' : 'No
+              especificado' }}</p>
+          </div>
+          <div>
+            <p class="text-black font-light">Duración estimada</p>
+            <p class="mt-1 font-semibold text-lg">{{ motor.minimo_cambio_mm ? motor.minimo_cambio_mm + ' mm' : 'No
+              especificado' }}</p>
+          </div>
+        </div>
+        <button mat-stroked-button color="secondary" class="mt-4" (click)="editarMotor.emit($index)">
+          <mat-icon>edit</mat-icon>
+          Editar motor
+        </button>
+      </mat-expansion-panel>
       }
     </mat-accordion>
+  </div>
   }
 
-  <div *ngIf="!canContinue()" style="color: red; margin-top: 16px">
-    ⚠️ Faltan datos para completar la configuración. Revisa los pasos anteriores.
+  <div *ngIf="!canContinue()">
+    Faltan datos para completar la configuración. Revisa los pasos anteriores.
   </div>
 </div>

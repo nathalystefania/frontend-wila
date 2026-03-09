@@ -19,6 +19,8 @@ export class OnboardingStateService {
     cantidadMotores?: number;
     plantaDraft?: PlantaDraft;
     motoresDraft?: MotorDraft[];
+    motoresIds?: number[];
+    carbonesIds?: number[];
   } = {};
 
   private get isBrowser(): boolean {
@@ -100,6 +102,24 @@ export class OnboardingStateService {
   }
   getMotoresDraft(): MotorDraft[] {
     return this.state.motoresDraft ?? [];
+  }
+
+  // IDs de motores creados en la API
+  setMotoresIds(ids: number[]) {
+    this.state.motoresIds = ids;
+    this.saveToStorage();
+  }
+  getMotoresIds(): number[] {
+    return this.state.motoresIds ?? [];
+  }
+
+  // IDs de carbones creados en la API
+  setCarbonIds(ids: number[]) {
+    this.state.carbonesIds = ids;
+    this.saveToStorage();
+  }
+  getCarbonIds(): number[] {
+    return this.state.carbonesIds ?? [];
   }
 
   clear() {

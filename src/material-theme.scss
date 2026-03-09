@@ -168,6 +168,8 @@ html {
       filled-container-shape: 4px,
       filled-disabled-label-text-color: var(--color-disabled-textos),
       filled-disabled-container-color: var(--color-disabled-base),
+      outlined-container-shape: 4px,
+      outlined-outline-width: 2px,
     )
   );
   @include mat.expansion-overrides(
@@ -175,6 +177,7 @@ html {
       container-shape: 4px,
       container-elevation-shadow: none,
       container-background-color: var(--color-white),
+      header-collapsed-state-height: 4.2rem,
     )
   );
   @include mat.list-overrides((

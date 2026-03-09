@@ -1,6 +1,7 @@
 import { Component, OnInit, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -32,6 +33,7 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
 
   error = '';
   loading = false;
+  loadingMotores = false;
   etapa: 'basicos' | 'configuracion' = 'basicos'; // Nueva propiedad para manejar etapas
   selectedMotorIndex = 0; // Índice del motor seleccionado en la segunda etapa
   motorCompletionStatus: boolean[] = []; // Seguimiento estable del estado de completitud
@@ -53,18 +55,53 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
       return;
     }
 
-    const existentes = this.state.getMotoresDraft();
-    
-    // Determinar etapa inicial
-    if (this.hayDatosBasicosCompletos(existentes)) {
-      this.etapa = 'configuracion';
-      this.etapaChange.emit('configuracion');
-      this.initConfiguracionForms(existentes);
+    const plantaId = this.state.getPlantaId();
+    if (plantaId) {
+      this.loadDesdeApi(plantaId, cantidad);
     } else {
-      this.etapa = 'basicos';
-      this.etapaChange.emit('basicos');
-      this.initBasicosForms(cantidad, existentes);
+      this.initDesdeEstado(cantidad);
     }
+  }
+
+  private async loadDesdeApi(plantaId: number, cantidad: number): Promise<void> {
+    this.loadingMotores = true;
+    try {
+      const motoresApi = await firstValueFrom(this.motoresService.getMotoresByPlanta(plantaId));
+      if (motoresApi.length > 0) {
+        // Sincronizar el estado local con los valores reales de la API
+        const draft = motoresApi.map(m => ({
+          codigo: m.codigo,
+          modelo: m.modelo ?? null,
+          ubicacion: m.ubicacion ?? null,
+          descripcion: m.descripcion ?? null,
+          num_anillos: m.num_anillos,
+          carbones_por_anillo: m.carbones_por_anillo,
+          alto_carbon_mm: m.alto_carbon_mm ?? null,
+          prealarma_mm: m.prealarma_mm ?? null,
+          minimo_cambio_mm: m.minimo_cambio_mm ?? null,
+          umbral_desgaste_perc: m.umbral_desgaste_perc ?? null,
+          duracion_estimada_dias: m.duracion_estimada_dias ?? null,
+        } as MotorDraft));
+        this.state.setMotoresDraft(draft);
+        this.initDesdeEstado(cantidad);
+      } else {
+        this.initDesdeEstado(cantidad);
+      }
+    } catch {
+      // Si falla la API, usar el estado local como fallback
+      this.initDesdeEstado(cantidad);
+    } finally {
+      this.loadingMotores = false;
+    }
+  }
+
+  private initDesdeEstado(cantidad: number): void {
+    const existentes = this.state.getMotoresDraft();
+    // Siempre iniciar en etapa básicos para que el usuario pueda revisar/editar
+    // Los formularios se pre-llenan con los datos existentes
+    this.etapa = 'basicos';
+    this.etapaChange.emit('basicos');
+    this.initBasicosForms(cantidad, existentes);
   }
 
   // Verificar si los datos básicos están completos
@@ -153,9 +190,9 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
     return this.fb.group({
       num_anillos: [motor.num_anillos ?? null, [Validators.required, Validators.min(1), Validators.max(10)]],
       carbones_por_anillo: [motor.carbones_por_anillo ?? null, [Validators.required, Validators.min(1), Validators.max(50)]],
-      alto_carbon_mm: [motor.alto_carbon_mm ?? null, [Validators.maxLength(6)]],
-      prealarma_mm: [motor.prealarma_mm ?? null, [Validators.maxLength(6)]],
-      minimo_cambio_mm: [motor.minimo_cambio_mm ?? null, [Validators.maxLength(6)]],
+      alto_carbon_mm: [motor.alto_carbon_mm ?? null, [Validators.required, Validators.maxLength(6)]],
+      prealarma_mm: [motor.prealarma_mm ?? null, [Validators.required, Validators.maxLength(6)]],
+      minimo_cambio_mm: [motor.minimo_cambio_mm ?? null, [Validators.required, Validators.maxLength(6)]],
     });
   }
 
@@ -312,29 +349,56 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
       console.log('Plant ID:', plantaId);
       console.log('Motores completos:', JSON.stringify(motoresCompletos, null, 2));
       
-      // Guardar motores en la API (crear o actualizar según corresponda)
-      const resultado = await this.motoresService.createOrUpdateMotores(plantaId, motoresCompletos);
-      console.log('Resultado de la operación:', resultado);
-      
+      // Guardar motores en la API: usa PUT si hay IDs guardados, POST si es la primera vez
+      const storedMotorIds = this.state.getMotoresIds() ?? [];
+      await this.motoresService.createOrUpdateMotores(plantaId, motoresCompletos, storedMotorIds);
+
+      // Obtener los motores desde la API para tener los IDs reales garantizados
+      const motoresGuardados = await firstValueFrom(this.motoresService.getMotoresByPlanta(plantaId));
+      const motorIds = motoresGuardados.map(m => m.id);
+      this.state.setMotoresIds(motorIds);
+
+      // Borrar anillos/carbones existentes de cada motor y recrearlos
+      const todosLosCarbonIds: number[] = [];
+      for (let i = 0; i < motorIds.length; i++) {
+        // Limpiar hijos existentes antes de recrear (evita 409 en anillos/carbones)
+        await this.motoresService.deleteMotorChildren(motorIds[i]);
+
+        const anillos = await this.motoresService.createAnillosForMotor(
+          motorIds[i],
+          motoresCompletos[i].num_anillos
+        );
+        for (const anillo of anillos) {
+          const carbonIds = await this.motoresService.createCarbonesForAnillo(
+            anillo,
+            motoresCompletos[i].carbones_por_anillo,
+            motoresCompletos[i]
+          );
+          todosLosCarbonIds.push(...carbonIds);
+        }
+      }
+      if (todosLosCarbonIds.length > 0) {
+        this.state.setCarbonIds(todosLosCarbonIds);
+      }
+
       // Actualizar estado local
       this.state.setMotoresDraft(motoresCompletos);
       
     } catch (err: any) {
-      console.error('Error al guardar motores:', err);
-      console.error('Status:', err.status);
-      console.error('Status text:', err.statusText);
-      console.error('Response del servidor:', err.error);
-      console.error('URL:', err.url);
-      
-      // Manejo específico de errores comunes
-      if (err.status === 400) {
-        this.error = `Error 400 - Bad Request: ${err?.error?.message || err?.error?.error || 'Formato de datos inválido'}`;
-      } else if (err.status === 404) {
-        this.error = `Error 404 - No encontrado: ${err?.error?.message || err?.error?.error || 'Planta no encontrada'}`;
-      } else if (err.status === 409) {
-        this.error = `Error 409 - Conflicto: ${err?.error?.message || err?.error?.error || 'Ya existe un motor con ese código en la planta'}`;
+      const url = err?.url ?? 'desconocida';
+      const serverMsg = err?.error?.message || err?.error?.error || err?.message || '';
+      console.error(`[motores] error en ${url} — status ${err?.status}`, err?.error);
+
+      if (err?.message?.includes('No se pudieron eliminar')) {
+        this.error = `No se pudo limpiar la configuración previa. Intenta de nuevo.`;
+      } else if (err?.status === 400) {
+        this.error = `Error 400 en ${url}: ${serverMsg || 'Formato de datos inválido'}`;
+      } else if (err?.status === 404) {
+        this.error = `Error 404 en ${url}: ${serverMsg || 'Recurso no encontrado'}`;
+      } else if (err?.status === 409) {
+        this.error = `Error 409 en ${url}: ${serverMsg || 'Conflicto al guardar'}`;
       } else {
-        this.error = err?.error?.error || err?.error?.message || 'No se pudieron guardar los motores';
+        this.error = serverMsg || `Error inesperado en ${url}`;
       }
       throw new Error('MOTORES_FAILED');
     } finally {
@@ -475,8 +539,16 @@ export class MotoresStepComponent implements OnInit, OnboardingStep {
     this.etapa = 'basicos';
     this.etapaChange.emit('basicos');
     this.selectedMotorIndex = 0;
-    
-    // IMPORTANTE: Notificar al componente padre que el estado cambió
+    this.stateChange.emit();
+  }
+
+  // Ir directamente a la configuración de un motor específico (llamado desde revisión)
+  irAConfiguracionMotor(motorIndex: number): void {
+    const existentes = this.state.getMotoresDraft();
+    this.initConfiguracionForms(existentes);
+    this.selectedMotorIndex = motorIndex;
+    this.etapa = 'configuracion';
+    this.etapaChange.emit('configuracion');
     this.stateChange.emit();
   }
 }
