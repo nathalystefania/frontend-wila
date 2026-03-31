@@ -4,7 +4,7 @@ publish = "dist/frontend-wila/browser"
 
 [[redirects]]
 from = "/api/*"
-to = "http://192.168.8.8:5000/api/:splat"
+to = "http://192.168.0.99:5000/api/:splat"
 status = 200
 force = true
 
