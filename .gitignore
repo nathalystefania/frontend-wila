@@ -43,3 +43,18 @@ proxy.conf.json
 # System files
 .DS_Store
 Thumbs.db
+
+
+#maqueta
+clon-html-scss/dist
+clon-html-scss/node_modules
+clon-html-scss/.angular/cache
+clon-html-scss/.vscode
+clon-html-scss/.history
+clon-html-scss/.sass-cache
+clon-html-scss/.idea
+clon-html-scss/.project
+clon-html-scss/.classpath
+clon-html-scss/.c9
+clon-html-scss/*.launch
+clon-html-scss/.settings

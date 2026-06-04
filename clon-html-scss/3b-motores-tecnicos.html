@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración Técnica de Motores - Wila</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="./src/styles.scss">
+</head>
+<body class="bg-[#f9f9f9] min-h-screen text-primary-950 font-sans">
+  <input type="checkbox" id="explanation-toggle" class="peer hidden" />
+  <label for="explanation-toggle" class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 peer-checked:opacity-100 peer-checked:pointer-events-auto cursor-pointer"></label>
+
+  <!-- Explanation drawer -->
+  <div class="fixed top-0 left-0 h-screen w-1/3 max-w-[400px] bg-primary-950 z-50 p-12 flex flex-col justify-center transform -translate-x-full transition-transform duration-300 ease-out peer-checked:translate-x-0 shadow-2xl">
+    <label for="explanation-toggle" class="absolute top-4 right-4 text-accent cursor-pointer hover:text-white transition-colors" aria-label="Cerrar explicación">
+      <span class="material-symbols-outlined">close</span>
+    </label>
+    
+    <div class="border-secondary border p-8 flex flex-col gap-8 justify-center text-center text-white">
+      <img src="./src/assets/images/logo-wila.svg" alt="Logo Wila" class="w-50 mx-auto" />
+      <div>
+        <h2 class="text-secondary text-xl font-semibold mb-4">Antes de comenzar</h2>
+        <p class="text-accent mb-4 text-sm leading-relaxed text-balance">
+          Este proceso sirve para dejar el sistema listo para funcionar correctamente en tu planta.<br /><br />
+          Aquí se ingresan datos básicos como los motores y sus características, para que el sistema pueda monitorear su estado y mostrar información útil más adelante.<br /><br />
+          Completar estos pasos una sola vez evita configuraciones manuales y posibles errores en el futuro.
+        </p>
+        <p class="text-accent text-xs opacity-75">Tiempo estimado: <b>30 minutos</b></p>
+      </div>
+      <div class="mx-auto">
+        <label for="explanation-toggle" class="text-secondary hover:text-white flex items-center gap-2 cursor-pointer transition-colors font-medium">
+          Entendido
+          <span class="material-symbols-outlined">thumb_up</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex min-h-full">
+    <!-- LEFT SIDEBAR -->
+    <div class="flex flex-col justify-between h-screen w-1/3 max-w-[400px] bg-primary-950 fixed left-0 top-0 text-white z-30">
+      <div>
+        <img src="./src/assets/images/logo-wila.svg" alt="Logo Wila" class="mx-8 mt-8 mb-2 w-50" />
+        <div class="stepper-container">
+          <div class="stepper-step">
+            <div class="stepper-line completed"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon completed"><span class="material-symbols-outlined !text-base">check</span></div>
+            </div>
+            <div class="stepper-label completed">
+              <div class="title">Creación de cuenta</div>
+              <div class="subtitle">Crear usuario y guardar la configuración.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-line completed"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon completed"><span class="material-symbols-outlined !text-base">check</span></div>
+            </div>
+            <div class="stepper-label completed">
+              <div class="title">Definición de la planta</div>
+              <div class="subtitle">Cantidad de motores de la planta.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-line"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon active">3</div>
+            </div>
+            <div class="stepper-label active">
+              <div class="title">Configuración de motores</div>
+              <div class="subtitle">Parámetros de cada motor.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-line"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon pending">4</div>
+            </div>
+            <div class="stepper-label pending">
+              <div class="title">Revisión de la configuración</div>
+              <div class="subtitle">Resumen de la configuración ingresada.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-line"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon pending">5</div>
+            </div>
+            <div class="stepper-label pending">
+              <div class="title">Asignación de dispositivos</div>
+              <div class="subtitle">Asociar dispositivos a su ubicación.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-icon-container">
+              <div class="stepper-icon pending">6</div>
+            </div>
+            <div class="stepper-label pending">
+              <div class="title">Configuración completada</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="w-full flex justify-center items-center px-8 pb-6">
+        <label for="explanation-toggle" class="text-white flex items-center gap-2 cursor-pointer hover:text-secondary-300 transition-colors">
+          <span class="material-symbols-outlined">help</span>
+          ¿Qué es esta configuración?
+        </label>
+      </div>
+    </div>
+
+    <!-- RIGHT CONTENT -->
+    <div class="wrap-content w-full p-8 flex flex-col justify-between min-h-screen ml-auto relative">
+      <div class="flex-grow flex flex-col justify-stretch pb-24 pt-8">
+        <div class="flex flex-col items-center justify-center text-center gap-4 max-w-[500px] mx-auto mb-8">
+          <img src="./src/assets/images/isotipo-wila.svg" alt="Logo Wila" class="w-16 mx-auto" />
+          <h1>Configuración de motores</h1>
+          <p class="text-[#555] text-sm leading-relaxed">
+            Se definen los parámetros de cada motor, como la cantidad de anillos y las características de los carbones.
+          </p>
+        </div>
+
+        <div class="flex gap-6 max-w-[900px] mx-auto w-full items-stretch">
+          <!-- Left side: List of engines -->
+          <div class="w-1/4 min-w-[200px] flex flex-col gap-2">
+            <div class="motor-nav-item active completed">
+              <div>
+                <div class="motor-title">MTR-001</div>
+                <div class="text-xs text-gray-500">Motor 1</div>
+              </div>
+              <span class="material-symbols-outlined motor-icon-status">check_circle</span>
+            </div>
+            <div class="motor-nav-item incomplete">
+              <div>
+                <div class="motor-title">MTR-002</div>
+                <div class="text-xs text-gray-500">Motor 2</div>
+              </div>
+              <span class="material-symbols-outlined motor-icon-status">warning</span>
+            </div>
+          </div>
+
+          <!-- Right side: Technical form card -->
+          <div class="flex-1 bg-white border border-gray-200 rounded p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <h3 class="mb-6 font-bold text-lg text-primary-950 border-b pb-2">Motor MTR-001</h3>
+
+              <form onsubmit="return false;">
+                <h4 class="mb-4 text-[#777] uppercase text-xs tracking-wider">Estructura del motor</h4>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                  <div class="form-field">
+                    <div class="form-field-wrapper">
+                      <span class="form-label">¿Cuántos anillos tiene este motor?</span>
+                      <input type="number" class="form-input" value="3">
+                    </div>
+                  </div>
+                  <div class="form-field">
+                    <div class="form-field-wrapper">
+                      <span class="form-label">¿Cuántos carbones tiene un anillo?</span>
+                      <input type="number" class="form-input" value="4">
+                    </div>
+                  </div>
+                </div>
+
+                <h4 class="mb-4 text-[#777] uppercase text-xs tracking-wider">Parámetros de los carbones</h4>
+                <div class="grid grid-cols-2 gap-6">
+                  <div class="flex flex-col gap-4">
+                    <div class="form-field">
+                      <div class="form-field-wrapper">
+                        <span class="form-label">Largo del carbón nuevo (mm)</span>
+                        <input type="text" class="form-input" value="80">
+                      </div>
+                    </div>
+                    <div class="form-field">
+                      <div class="form-field-wrapper">
+                        <span class="form-label">Largo de pre alarma (mm)</span>
+                        <input type="text" class="form-input" value="25">
+                      </div>
+                    </div>
+                    <div class="form-field">
+                      <div class="form-field-wrapper">
+                        <span class="form-label">Largo mínimo de cambio por pauta (mm)</span>
+                        <input type="text" class="form-input" value="15">
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Illustration container -->
+                  <div class="flex items-center justify-center relative bg-gray-50 rounded border border-gray-100 p-4">
+                    <!-- Overlay label for the carbon size -->
+                    <div class="cota-carbon carbon-alto font-bold text-secondary text-sm bg-white/90 px-2 py-0.5 rounded shadow-sm border border-secondary/20">
+                      80 mm
+                    </div>
+                    <img src="./src/assets/images/carbon-1.png" alt="Largo del carbón nuevo" class="max-h-[180px] w-auto object-contain" />
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            <!-- Inside-card navigation buttons -->
+            <div class="flex justify-between items-center mt-8 border-t pt-4">
+              <button class="btn-accent !py-2 !px-4" disabled>
+                <span class="material-symbols-outlined">arrow_back</span>
+                Motor anterior
+              </button>
+              <span class="text-sm text-gray-500 font-medium">1 de 2</span>
+              <a href="#" class="btn-accent !py-2 !px-4 hover:bg-gray-100">
+                Motor siguiente
+                <span class="material-symbols-outlined">arrow_forward</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM NAVIGATION BAR -->
+      <div class="wrap-content fixed bottom-0 right-0 w-full bg-[rgba(249,249,249,0.8)] px-8 py-4 z-20 border-t border-gray-200 backdrop-blur-sm">
+        <div class="flex justify-between w-full max-w-[800px] mx-auto">
+          <a href="3a-motores-basicos.html" class="btn-accent min-w-[180px]">
+            <span class="material-symbols-outlined">arrow_left_alt</span>
+            Volver
+          </a>
+          <a href="4-revision.html" class="btn-secondary min-w-[220px]">
+            Guardar y continuar
+            <span class="material-symbols-outlined">arrow_right_alt</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

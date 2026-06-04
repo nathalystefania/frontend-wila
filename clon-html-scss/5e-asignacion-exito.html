@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sincronización Exitosa - Wila</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Work+Sans:ital,wght@0,100..900;1,100..900&family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="./src/styles.scss">
+</head>
+<body class="bg-[#f9f9f9] min-h-screen text-primary-950 font-sans">
+  <input type="checkbox" id="explanation-toggle" class="peer hidden" />
+  <label for="explanation-toggle" class="fixed inset-0 bg-black/50 z-40 opacity-0 pointer-events-none transition-opacity duration-300 peer-checked:opacity-100 peer-checked:pointer-events-auto cursor-pointer"></label>
+
+  <!-- Explanation drawer -->
+  <div class="fixed top-0 left-0 h-screen w-1/3 max-w-[400px] bg-primary-950 z-50 p-12 flex flex-col justify-center transform -translate-x-full transition-transform duration-300 ease-out peer-checked:translate-x-0 shadow-2xl">
+    <label for="explanation-toggle" class="absolute top-4 right-4 text-accent cursor-pointer hover:text-white transition-colors" aria-label="Cerrar explicación">
+      <span class="material-symbols-outlined">close</span>
+    </label>
+    
+    <div class="border-secondary border p-8 flex flex-col gap-8 justify-center text-center text-white">
+      <img src="./src/assets/images/logo-wila.svg" alt="Logo Wila" class="w-50 mx-auto" />
+      <div>
+        <h2 class="text-secondary text-xl font-semibold mb-4">Antes de comenzar</h2>
+        <p class="text-accent mb-4 text-sm leading-relaxed text-balance">
+          Este proceso sirve para dejar el sistema listo para funcionar correctamente en tu planta.<br /><br />
+          Aquí se ingresan datos básicos como los motores y sus características, para que el sistema pueda monitorear su estado y mostrar información útil más adelante.<br /><br />
+          Completar estos pasos una sola vez evita configuraciones manuales y posibles errores en el futuro.
+        </p>
+        <p class="text-accent text-xs opacity-75">Tiempo estimado: <b>30 minutos</b></p>
+      </div>
+      <div class="mx-auto">
+        <label for="explanation-toggle" class="text-secondary hover:text-white flex items-center gap-2 cursor-pointer transition-colors font-medium">
+          Entendido
+          <span class="material-symbols-outlined">thumb_up</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex min-h-full">
+    <!-- LEFT SIDEBAR -->
+    <div class="flex flex-col justify-between h-screen w-1/3 max-w-[400px] bg-primary-950 fixed left-0 top-0 text-white z-30">
+      <div>
+        <img src="./src/assets/images/logo-wila.svg" alt="Logo Wila" class="mx-8 mt-8 mb-2 w-50" />
+        <div class="stepper-container">
+          <div class="stepper-step">
+            <div class="stepper-line completed"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon completed"><span class="material-symbols-outlined !text-base">check</span></div>
+            </div>
+            <div class="stepper-label completed">
+              <div class="title">Creación de cuenta</div>
+              <div class="subtitle">Crear usuario y guardar la configuración.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-line completed"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon completed"><span class="material-symbols-outlined !text-base">check</span></div>
+            </div>
+            <div class="stepper-label completed">
+              <div class="title">Definición de la planta</div>
+              <div class="subtitle">Cantidad de motores de la planta.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-line completed"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon completed"><span class="material-symbols-outlined !text-base">check</span></div>
+            </div>
+            <div class="stepper-label completed">
+              <div class="title">Configuración de motores</div>
+              <div class="subtitle">Parámetros de cada motor.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-line completed"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon completed"><span class="material-symbols-outlined !text-base">check</span></div>
+            </div>
+            <div class="stepper-label completed">
+              <div class="title">Revisión de la configuración</div>
+              <div class="subtitle">Resumen de la configuración ingresada.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-line"></div>
+            <div class="stepper-icon-container">
+              <div class="stepper-icon active">5</div>
+            </div>
+            <div class="stepper-label active">
+              <div class="title">Asignación de dispositivos</div>
+              <div class="subtitle">Asociar dispositivos a su ubicación.</div>
+            </div>
+          </div>
+          
+          <div class="stepper-step">
+            <div class="stepper-icon-container">
+              <div class="stepper-icon pending">6</div>
+            </div>
+            <div class="stepper-label pending">
+              <div class="title">Configuración completada</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="w-full flex justify-center items-center px-8 pb-6">
+        <label for="explanation-toggle" class="text-white flex items-center gap-2 cursor-pointer hover:text-secondary-300 transition-colors">
+          <span class="material-symbols-outlined">help</span>
+          ¿Qué es esta configuración?
+        </label>
+      </div>
+    </div>
+
+    <!-- RIGHT CONTENT -->
+    <div class="wrap-content w-full p-8 flex flex-col justify-between min-h-screen ml-auto relative">
+      <div class="flex-grow flex items-center justify-stretch pb-24 pt-8">
+        <div class="w-full rounded border border-gray-250 bg-[#f7f7f7] px-8 py-10 max-w-[650px] mx-auto shadow-sm">
+          <div class="flex flex-col items-center text-center">
+            <!-- success icon animations replica -->
+            <div class="relative mb-6 flex h-24 w-24 items-center justify-center">
+              <div class="absolute h-24 w-24 rounded-full bg-success-10/70"></div>
+              <div class="absolute h-18 w-18 rounded-full bg-success-20/20"></div>
+              <div class="relative flex h-12 w-12 items-center justify-center rounded-full bg-success-30 text-white shadow">
+                <span class="material-symbols-outlined !text-2xl">check</span>
+              </div>
+            </div>
+
+            <h2 class="mb-4 text-3xl font-bold tracking-tight text-primary-950">Sincronización exitosa</h2>
+            <p class="mb-8 text-base text-gray-500">El dispositivo ha sido sincronizado correctamente</p>
+
+            <p class="flex gap-3 items-center mb-10 text-base font-semibold text-primary-950 bg-white border border-gray-150 px-5 py-2.5 rounded-full shadow-inner">
+              <span>Motor #MTR-001</span>
+              <span class="material-symbols-outlined text-gray-400 !text-sm">arrow_forward</span>
+              <span>Anillo #1</span>
+              <span class="material-symbols-outlined text-gray-400 !text-sm">arrow_forward</span>
+              <span>Carbón #1</span>
+            </p>
+
+            <a href="5a-asignacion-motor.html" class="btn-secondary !bg-primary-950 hover:!bg-primary-900 flex items-center gap-2">
+              Sincronizar otro dispositivo
+              <span class="material-symbols-outlined !text-sm">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTTOM NAVIGATION BAR -->
+      <div class="wrap-content fixed bottom-0 right-0 w-full bg-[rgba(249,249,249,0.8)] px-8 py-4 z-20 border-t border-gray-200 backdrop-blur-sm">
+        <div class="flex justify-between w-full max-w-[800px] mx-auto">
+          <a href="5d-asignacion-encendido.html" class="btn-accent min-w-[180px]">
+            <span class="material-symbols-outlined">arrow_left_alt</span>
+            Volver
+          </a>
+          <a href="6-complete.html" class="btn-secondary min-w-[220px]">
+            Guardar y continuar
+            <span class="material-symbols-outlined">arrow_right_alt</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

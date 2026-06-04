@@ -1,3 +1,9 @@
+.wrap-content{
+  @media screen and (min-width: 1200px) {
+    width: calc(100% - 400px);
+  }
+}
+
 // Animaciones para el slide
 @keyframes slide-up {
   from {
